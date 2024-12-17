@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following
@@ -7,7 +6,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 
 [assembly: AssemblyTitle("Remove Empty Directories")]
-[assembly: AssemblyDescription("Searches and deletes empty directories recursively below the specified starting folder." )]
+[assembly: AssemblyDescription("Searches and deletes empty directories recursively below the specified starting folder.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Jonas John")]
 [assembly: AssemblyProduct("Remove Empty Directories")]
@@ -15,13 +14,16 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark("The GNU Lesser General Public License (LGPL)")]
 [assembly: AssemblyCulture("")]
 
+
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from
 // COM, set the ComVisible attribute to true on that type.
 [assembly: ComVisible(false)]
 
+
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("8e03e827-e91d-4eac-9bfa-a23cd7cb7989")]
+
 
 // Version information for an assembly consists of the following four values:
 //

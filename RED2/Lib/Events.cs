@@ -1,122 +1,151 @@
-﻿using System;
-using Alphaleonis.Win32.Filesystem;
-
-namespace RED2
+﻿namespace RED2.Lib
 {
+
+    using System;
+
     public class WorkflowStepChangedEventArgs : EventArgs
     {
-        public WorkflowSteps NewStep { get; set; }
 
-        public WorkflowStepChangedEventArgs(WorkflowSteps NewStep)
+        public WorkflowStepChangedEventArgs(WorkflowSteps newStep)
         {
-            this.NewStep = NewStep;
+            this.NewStep = newStep;
         }
+
+        public WorkflowSteps NewStep{get; set;}
+
     }
 
     public class ErrorEventArgs : EventArgs
     {
-        public string Message { get; set; }
 
         public ErrorEventArgs(string msg)
         {
             this.Message = msg;
         }
+
+        public string Message{get; set;}
+
     }
 
     public class FinishedScanForEmptyDirsEventArgs : EventArgs
     {
-        public int EmptyFolderCount { get; set; }
-        public int FolderCount { get; set; }
 
-        public FinishedScanForEmptyDirsEventArgs(int EmptyFolderCount, int FolderCount)
+        public FinishedScanForEmptyDirsEventArgs(int emptyFolderCount, int folderCount)
         {
-            this.EmptyFolderCount = EmptyFolderCount;
-            this.FolderCount = FolderCount;
+            this.EmptyFolderCount = emptyFolderCount;
+            this.FolderCount      = folderCount;
         }
+
+        public int EmptyFolderCount{get; set;}
+
+        public int FolderCount{get; set;}
+
     }
 
     public class DeleteProcessUpdateEventArgs : EventArgs
     {
-        public int ProgressStatus { get; set; }
-        public string Path { get; set; }
-        public DirectoryDeletionStatusTypes Status { get; set; }
-        public int FolderCount { get; set; }
 
         public DeleteProcessUpdateEventArgs(int progressStatus, string path, DirectoryDeletionStatusTypes status, int folderCount)
         {
             this.ProgressStatus = progressStatus;
-            this.Path = path;
-            this.Status = status;
-            this.FolderCount = folderCount;
+            this.Path           = path;
+            this.Status         = status;
+            this.FolderCount    = folderCount;
         }
+
+        public int FolderCount{get; set;}
+
+        public string Path{get; set;}
+
+        public int ProgressStatus{get; set;}
+
+        public DirectoryDeletionStatusTypes Status{get; set;}
+
     }
 
     public class DeleteProcessFinishedEventArgs : EventArgs
     {
-        public int DeletedFolderCount { get; set; }
-        public int FailedFolderCount { get; set; }
-        public int ProtectedCount { get; set; }
 
         public DeleteProcessFinishedEventArgs(int deletedFolderCount, int failedFolderCount, int protectedCount)
         {
             this.DeletedFolderCount = deletedFolderCount;
-            this.FailedFolderCount = failedFolderCount;
-            this.ProtectedCount = protectedCount;
+            this.FailedFolderCount  = failedFolderCount;
+            this.ProtectedCount     = protectedCount;
         }
+
+        public int DeletedFolderCount{get; set;}
+
+        public int FailedFolderCount{get; set;}
+
+        public int ProtectedCount{get; set;}
+
     }
 
     public class ProtectionStatusChangedEventArgs : EventArgs
     {
-        public string Path { get; set; }
-        public bool Protected { get; set; }
 
-        public ProtectionStatusChangedEventArgs(string Path, bool Protected)
+        public ProtectionStatusChangedEventArgs(string path, bool @protected)
         {
-            this.Path = Path;
-            this.Protected = Protected;
+            this.Path      = path;
+            this.Protected = @protected;
         }
+
+        public string Path{get; set;}
+
+        public bool Protected{get; set;}
+
     }
 
     public class DeleteRequestFromTreeEventArgs : EventArgs
     {
-        public string Directory { get; set; }
 
-        public DeleteRequestFromTreeEventArgs(string Directory)
+        public DeleteRequestFromTreeEventArgs(string directory)
         {
-            this.Directory = Directory;
+            this.Directory = directory;
         }
+
+        public string Directory{get; set;}
+
     }
 
     public class DeletionErrorEventArgs : EventArgs
     {
-        public string Path { get; set; }
-        public string ErrorMessage { get; set; }
 
-        public DeletionErrorEventArgs(string Path, string ErrorMessage)
+        public DeletionErrorEventArgs(string path, string errorMessage)
         {
-            this.Path = Path;
-            this.ErrorMessage = ErrorMessage;
+            this.Path         = path;
+            this.ErrorMessage = errorMessage;
         }
+
+        public string ErrorMessage{get; set;}
+
+        public string Path{get; set;}
+
     }
 
     public class FoundEmptyDirInfoEventArgs : EventArgs
     {
-        public string Directory { get; set; }
-        public DirectorySearchStatusTypes Type { get; set; }
-        public string ErrorMessage { get; set; }
 
-        public FoundEmptyDirInfoEventArgs(string Directory, DirectorySearchStatusTypes type)
+        public FoundEmptyDirInfoEventArgs(string directory, DirectorySearchStatusTypes type)
         {
-            this.Directory = Directory;
-            this.Type = type;
+            this.Directory    = directory;
+            this.Type         = type;
             this.ErrorMessage = "";
         }
 
-        public FoundEmptyDirInfoEventArgs(string Directory, DirectorySearchStatusTypes type, string ErrorMessage)
+        public FoundEmptyDirInfoEventArgs(string directory, DirectorySearchStatusTypes type, string errorMessage)
         {
-            this.Directory = Directory;
-            this.Type = type;
-            this.ErrorMessage = ErrorMessage;
+            this.Directory    = directory;
+            this.Type         = type;
+            this.ErrorMessage = errorMessage;
         }
+
+        public string Directory{get; set;}
+
+        public string ErrorMessage{get; set;}
+
+        public DirectorySearchStatusTypes Type{get; set;}
+
     }
+
 }

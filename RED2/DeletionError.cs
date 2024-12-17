@@ -1,18 +1,20 @@
-﻿using System;
-using System.Windows.Forms;
-
-namespace RED2
+﻿namespace RED2
 {
+
+    using System;
+    using System.Windows.Forms;
+
     public partial class DeletionError : Form
     {
+
         public DeletionError()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
-        private void DeletionError_Load(object sender, EventArgs e)
+        internal void SetErrorMessage(string msg)
         {
-
+            this.tbErrorMessage.Text = msg;
         }
 
         internal void SetPath(string path)
@@ -20,9 +22,8 @@ namespace RED2
             this.tbPath.Text = path;
         }
 
-        internal void SetErrorMessage(string msg)
-        {
-            this.tbErrorMessage.Text = msg;
-        }
+        private void DeletionError_Load(object sender, EventArgs e) { }
+
     }
+
 }

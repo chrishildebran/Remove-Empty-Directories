@@ -1,36 +1,33 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using Alphaleonis.Win32.Filesystem;
 using FileAttributes = System.IO.FileAttributes;
 
-namespace RED2
+namespace RED2.Lib
 {
+
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.IO;
+    using Properties;
+
     /// <summary>
-    /// Searches for empty directories
+    ///     Searches for empty directories
     /// </summary>
     public class FindEmptyDirectoryWorker : BackgroundWorker
     {
-        private int folderCount = 0;
-        public int FolderCount
-        {
-            get { return folderCount; }
-        }
-
-        public RuntimeData Data { get; set; }
-
-        private string[] ignoreFolderList = null;
-        private string[] ignoreFileList = null;
-
-        public DeletionErrorEventArgs ErrorInfo { get; set; }
-
-        public int PossibleEndlessLoop { get; set; }
 
         public FindEmptyDirectoryWorker()
         {
-            WorkerReportsProgress = true;
-            WorkerSupportsCancellation = true;
+            this.WorkerReportsProgress      = true;
+            this.WorkerSupportsCancellation = true;
         }
+
+        public RuntimeData Data{get; set;}
+
+        public DeletionErrorEventArgs ErrorInfo{get; set;}
+
+        public int FolderCount{get; private set;}
+
+        public int PossibleEndlessLoop{get; set;}
 
         protected override void OnDoWork(DoWorkEventArgs e)
         {
@@ -38,21 +35,23 @@ namespace RED2
 
             this.PossibleEndlessLoop = 0;
 
+
             // Clean dir list
             this.Data.EmptyFolderList = new List<string>();
 
-            this.ignoreFileList = this.Data.GetIgnoreFileList();
+            this.ignoreFileList   = this.Data.GetIgnoreFileList();
             this.ignoreFolderList = this.Data.GetIgnoreDirectories();
 
             try
             {
-                var rootStatusType = this.checkIfDirectoryEmpty(startFolder, 1);
+                var rootStatusType = this.CheckIfDirectoryEmpty(startFolder, 1);
 
                 this.ReportProgress(0, new FoundEmptyDirInfoEventArgs(startFolder.FullName, rootStatusType));
 
                 if (this.PossibleEndlessLoop > this.Data.InfiniteLoopDetectionCount)
                 {
                     this.Data.AddLogMessage("Detected possible infinite-loop somewhere in the target path \"" + startFolder + "\" (symbolic links can cause this)");
+
                     throw new Exception("Possible infinite-loop detected (symbolic links can cause this)");
                 }
             }
@@ -61,25 +60,28 @@ namespace RED2
                 e.Cancel = true;
                 this.Data.AddLogMessage("An error occurred during the scan process: " + ex.Message);
                 this.ErrorInfo = new DeletionErrorEventArgs(startFolder.FullName, ex.Message);
+
                 return;
             }
 
-            if (CancellationPending)
+            if (this.CancellationPending)
             {
                 this.Data.AddLogMessage("Scan process was cancelled");
                 e.Cancel = true;
                 e.Result = 0;
+
                 return;
             }
 
             e.Result = 1;
         }
 
-        private DirectorySearchStatusTypes checkIfDirectoryEmpty(DirectoryInfo startDir, int depth)
+        private DirectorySearchStatusTypes CheckIfDirectoryEmpty(DirectoryInfo startDir, int depth)
         {
             if (this.PossibleEndlessLoop > this.Data.InfiniteLoopDetectionCount)
             {
                 this.ReportProgress(0, new FoundEmptyDirInfoEventArgs(startDir.FullName, DirectorySearchStatusTypes.Error, "Aborted - possible infinite-loop detected"));
+
                 return DirectorySearchStatusTypes.Error;
             }
 
@@ -88,22 +90,32 @@ namespace RED2
                 // Thread.Sleep(500); -> ?
 
                 if (this.Data.MaxDepth != -1 && depth > this.Data.MaxDepth)
+                {
                     return DirectorySearchStatusTypes.NotEmpty;
+                }
+
 
                 // Cancel process if the user hits stop
-                if (CancellationPending)
+                if (this.CancellationPending)
+                {
                     return DirectorySearchStatusTypes.NotEmpty;
+                }
 
-                this.folderCount++;
+                this.FolderCount++;
+
 
                 // update status progress bar after 100 steps:
-                if (this.folderCount % 100 == 0)
-                    this.ReportProgress(folderCount, "Checking directory: " + startDir.Name);
+                if (this.FolderCount % 100 == 0)
+                {
+                    this.ReportProgress(this.FolderCount, "Checking directory: " + startDir.Name);
+                }
 
-                bool containsFiles = false;
+                var containsFiles = false;
+
 
                 // Get file list
                 FileInfo[] fileList = null;
+
 
                 // some directories could trigger an exception:
                 try
@@ -120,6 +132,7 @@ namespace RED2
                     // CF = true = folder does not get deleted:
                     containsFiles = true; // secure way
                     this.Data.AddLogMessage("Failed to access files in \"" + startDir.FullName + "\"");
+
                     this.ReportProgress(0, new FoundEmptyDirInfoEventArgs(startDir.FullName, DirectorySearchStatusTypes.Error, "Failed to access files"));
                 }
                 else if (fileList.Length == 0)
@@ -128,17 +141,18 @@ namespace RED2
                 }
                 else
                 {
-                    string delPattern = "";
+                    var delPattern = "";
+
 
                     // loop trough files and cancel if containsFiles == true
-                    for (int f = 0; (f < fileList.Length && !containsFiles); f++)
+                    for (var f = 0; f < fileList.Length && !containsFiles; f++)
                     {
-                        FileInfo file = null;
-                        int filesize = 0;
+                        FileInfo file     = null;
+                        var      filesize = 0;
 
                         try
                         {
-                            file = fileList[f];
+                            file     = fileList[f];
                             filesize = (int)file.Length;
                         }
                         catch
@@ -146,14 +160,19 @@ namespace RED2
                             // keep folder if there is a strange file that
                             // triggers a exception:
                             containsFiles = true;
+
                             break;
                         }
 
+
                         // If only one file is good, then stop.
                         if (!SystemFunctions.MatchesIgnorePattern(file, filesize, this.Data.IgnoreEmptyFiles, this.ignoreFileList, out delPattern))
+                        {
                             containsFiles = true;
+                        }
                     }
                 }
+
 
                 // If the folder does not contain any files -> get subfolders:
                 DirectoryInfo[] subFolderList = null;
@@ -166,9 +185,12 @@ namespace RED2
                 {
                     // If we can not read the folder -> don't delete it:
                     this.Data.AddLogMessage("Failed to access subdirectories in \"" + startDir.FullName + "\"");
+
                     this.ReportProgress(0, new FoundEmptyDirInfoEventArgs(startDir.FullName, DirectorySearchStatusTypes.Error, "Failed to access subdirectories"));
+
                     return DirectorySearchStatusTypes.Error;
                 }
+
 
                 // The folder is empty, break here:
                 if (!containsFiles && subFolderList.Length == 0)
@@ -176,20 +198,21 @@ namespace RED2
                     return DirectorySearchStatusTypes.Empty;
                 }
 
-                bool allSubDirectoriesEmpty = true;
+                var allSubDirectoriesEmpty = true;
 
                 foreach (var curDir in subFolderList)
                 {
                     var attribs = curDir.Attributes;
 
-                    bool ignoreSystemDir = (this.Data.KeepSystemFolders && ((attribs & FileAttributes.System) == FileAttributes.System));
-                    bool ignoreHiddenDir = (this.Data.IgnoreHiddenFolders && ((attribs & FileAttributes.Hidden) == FileAttributes.Hidden));
+                    var ignoreSystemDir = this.Data.KeepSystemFolders   && (attribs & FileAttributes.System) == FileAttributes.System;
+                    var ignoreHiddenDir = this.Data.IgnoreHiddenFolders && (attribs & FileAttributes.Hidden) == FileAttributes.Hidden;
 
-                    bool ignoreSubDirectory = (ignoreSystemDir || ignoreHiddenDir);
+                    var ignoreSubDirectory = ignoreSystemDir || ignoreHiddenDir;
 
-                    if (!ignoreSubDirectory && checkIfDirectoryIsOnIgnoreList(curDir))
+                    if (!ignoreSubDirectory && this.checkIfDirectoryIsOnIgnoreList(curDir))
                     {
                         this.Data.AddLogMessage("Aborted scan of \"" + curDir.FullName + "\" because it is on the ignore list.");
+
                         this.ReportProgress(0, new FoundEmptyDirInfoEventArgs(curDir.FullName, DirectorySearchStatusTypes.Ignore));
                         ignoreSubDirectory = true;
                     }
@@ -197,9 +220,11 @@ namespace RED2
                     if (!ignoreSubDirectory && (attribs & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint)
                     {
                         this.Data.AddLogMessage("Aborted scan of \"" + curDir.FullName + "\" because it is a symbolic link");
+
                         this.ReportProgress(0, new FoundEmptyDirInfoEventArgs(curDir.FullName, DirectorySearchStatusTypes.Error, "Aborted because dir is a symbolic link"));
                         ignoreSubDirectory = true;
                     }
+
 
                     // TODO: Implement more checks
                     //else if ((attribs & FileAttributes.Device) == FileAttributes.Device) msg = "Device - Aborted - found";
@@ -216,60 +241,82 @@ namespace RED2
                     if (!ignoreSubDirectory)
                     {
                         // JRS ADDED check for AGE of folder
-                        if(curDir.CreationTime.AddHours(this.Data.MinFolderAgeHours) < DateTime.Now)
+                        if (curDir.CreationTime.AddHours(this.Data.MinFolderAgeHours) < DateTime.Now)
                         {
-                            subFolderStatus = this.checkIfDirectoryEmpty(curDir, depth + 1);
+                            subFolderStatus = this.CheckIfDirectoryEmpty(curDir, depth + 1);
                         }
-                        else 
+                        else
                         {
-                            this.Data.AddLogMessage(String.Format(RED2.Properties.Resources.young_folder_skipped, curDir.FullName, this.Data.MinFolderAgeHours.ToString(), curDir.CreationTime.ToString()));
+                            this.Data.AddLogMessage(string.Format(Resources.young_folder_skipped, curDir.FullName, this.Data.MinFolderAgeHours.ToString(), curDir.CreationTime.ToString()));
                         }
+
 
                         // Report status to the GUI
                         if (subFolderStatus == DirectorySearchStatusTypes.Empty)
+                        {
                             this.ReportProgress(0, new FoundEmptyDirInfoEventArgs(curDir.FullName, subFolderStatus));
+                        }
                     }
+
 
                     // this folder is not empty:
                     if (subFolderStatus != DirectorySearchStatusTypes.Empty || ignoreSubDirectory)
+                    {
                         allSubDirectoriesEmpty = false;
+                    }
                 }
 
-                // All subdirectories are empty
-                return (allSubDirectoriesEmpty && !containsFiles) ? DirectorySearchStatusTypes.Empty : DirectorySearchStatusTypes.NotEmpty;
 
+                // All subdirectories are empty
+                return allSubDirectoriesEmpty && !containsFiles ? DirectorySearchStatusTypes.Empty : DirectorySearchStatusTypes.NotEmpty;
             }
             catch (Exception ex)
             {
                 // Error handling
 
-                if (ex is System.IO.PathTooLongException)
+                if (ex is PathTooLongException)
+                {
                     this.PossibleEndlessLoop++;
+                }
 
                 this.Data.AddLogMessage("An unknown error occurred while trying to scan this directory: \"" + startDir.FullName + "\" - Error message: " + ex.Message);
+
                 this.ReportProgress(0, new FoundEmptyDirInfoEventArgs(startDir.FullName, DirectorySearchStatusTypes.Error, ex.Message));
 
                 return DirectorySearchStatusTypes.Error;
             }
         }
 
-        private bool checkIfDirectoryIsOnIgnoreList(DirectoryInfo Folder)
+        private bool checkIfDirectoryIsOnIgnoreList(DirectoryInfo folder)
         {
-            bool ignoreFolder = false;
+            var ignoreFolder = false;
 
             if (this.ignoreFolderList.Length > 0)
             {
-                foreach (string currentPath in this.ignoreFolderList)
+                foreach (var currentPath in this.ignoreFolderList)
                 {
-                    if (currentPath == "") continue;
+                    if (currentPath == "")
+                    {
+                        continue;
+                    }
+
 
                     // skip directory if a part of it is on the filterlist
                     // TODO: Use better compare method
-                    if (Folder.FullName.ToLower().Contains(currentPath.ToLower()))
+                    if (folder.FullName.ToLower().Contains(currentPath.ToLower()))
+                    {
                         ignoreFolder = true;
+                    }
                 }
             }
+
             return ignoreFolder;
         }
+
+        private string[] ignoreFileList;
+
+        private string[] ignoreFolderList;
+
     }
+
 }
