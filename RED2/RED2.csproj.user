@@ -17,4 +17,15 @@
   <PropertyGroup>
     <EnableSecurityDebugging>false</EnableSecurityDebugging>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Update="DeletionError.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="LogWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="MainWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
 </Project>
