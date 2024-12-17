@@ -1,9 +1,5 @@
 ﻿namespace RED2.Lib;
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-
 /// <summary>
 ///     RED core class, handles events and communicates with the GUI
 /// </summary>

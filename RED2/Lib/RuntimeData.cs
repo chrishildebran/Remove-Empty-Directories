@@ -1,10 +1,5 @@
 ﻿namespace RED2.Lib;
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-
 /// <summary>
 ///     Container for runtime related data
 /// </summary>

@@ -1,12 +1,5 @@
 ﻿namespace RED2.Lib;
 
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Security.Permissions;
-using System.Text.RegularExpressions;
-using System.Windows.Forms;
-using Microsoft.Win32;
 using Properties;
 
 /// <summary>
@@ -56,14 +49,15 @@ public class SystemFunctions
             // UGLY hack to determine whether we have write access
             // to a specific directory
 
-            var r        = new Random();
+            var random        = new Random();
+
             var tempName = path + "deltest";
 
             var counter = 0;
 
             while (Directory.Exists(tempName))
             {
-                tempName = path + "deltest" + r.Next(0, 9999);
+                tempName = path + "deltest" + random.Next(0, 9999);
 
                 if (counter > 100)
                 {

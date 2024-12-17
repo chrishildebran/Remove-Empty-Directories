@@ -1,8 +1,5 @@
 ﻿namespace RED2;
 
-using System;
-using System.Windows.Forms;
-
 public partial class DeletionError : Form
 {
 

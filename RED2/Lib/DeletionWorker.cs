@@ -1,10 +1,5 @@
 ﻿namespace RED2.Lib;
 
-using System;
-using System.ComponentModel;
-using System.IO;
-using System.Threading;
-
 /// <summary>
 ///     Deletes the empty directories RED found
 /// </summary>

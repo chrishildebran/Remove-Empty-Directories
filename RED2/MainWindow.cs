@@ -1,17 +1,5 @@
 namespace RED2;
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Configuration;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Reflection;
-using System.Security.Principal;
-using System.Text;
-using System.Windows.Forms;
-using Lib;
 using Properties;
 using ErrorEventArgs = Lib.ErrorEventArgs;
 

@@ -1,7 +1,5 @@
 ﻿namespace RED2.Lib;
 
-using System;
-
 [Serializable]
 public class RedPermissionDeniedException : Exception
 {

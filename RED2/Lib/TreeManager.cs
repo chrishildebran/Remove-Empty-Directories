@@ -1,11 +1,5 @@
 ﻿namespace RED2.Lib;
 
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Windows.Forms;
-
 /// <summary>
 ///     Handles tree related things
 ///     TODO: Handle null references within tree nodes
