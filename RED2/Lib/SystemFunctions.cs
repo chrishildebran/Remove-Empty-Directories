@@ -9,33 +9,6 @@ using System.Windows.Forms;
 using Microsoft.Win32;
 using Properties;
 
-public enum DeleteModes
-{
-
-    RecycleBin = 0,
-
-    RecycleBinShowErrors = 1,
-
-    RecycleBinWithQuestion = 2,
-
-    Direct = 3,
-
-    Simulate = 4
-
-}
-
-[Serializable]
-public class RedPermissionDeniedException : Exception
-{
-
-    public RedPermissionDeniedException() { }
-
-    public RedPermissionDeniedException(string message) : base(message) { }
-
-    public RedPermissionDeniedException(string message, Exception inner) : base(message, inner) { }
-
-}
-
 /// <summary>
 ///     A collection of (generic) system functions
 ///     Exception handling should be made by the caller
