@@ -42,61 +42,6 @@ public class SystemFunctions
         return str.Replace(@"\r\n", "\r\n").Replace(@"\n", "\n");
     }
 
-    public static bool IsDirLocked(string path)
-    {
-        try
-        {
-            // UGLY hack to determine whether we have write access
-            // to a specific directory
-
-            var random        = new Random();
-
-            var tempName = path + "deltest";
-
-            var counter = 0;
-
-            while (Directory.Exists(tempName))
-            {
-                tempName = path + "deltest" + random.Next(0, 9999);
-
-                if (counter > 100)
-                {
-                    return true; // Something strange is going on... stop here...
-                }
-
-                counter++;
-            }
-
-            Directory.Move(path,     tempName);
-            Directory.Move(tempName, path);
-
-            return false;
-        }
-        catch //(Exception ex)
-        {
-            // Could not rename -> probably we have no 
-            // write access to the directory
-            return true;
-        }
-    }
-
-    public static bool IsFileLocked(FileInfo file)
-    {
-        try
-        {
-            using (file.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.None))
-            {
-                return false;
-            }
-        }
-        catch //(IOException)
-        {
-            // Could not open file -> probably we have no 
-            // write access to the file
-            return true;
-        }
-    }
-
     /// <summary>
     ///     Check for the registry key
     /// </summary>
@@ -261,7 +206,7 @@ public class SystemFunctions
                 throw new RedPermissionDeniedException("Could not delete file \"" + file.FullName + "\" because the access is protected by the (file) system (permission denied).");
             }
 
-            FileSystem.Delete(file.FullName, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin, UICancelOption.ThrowException);
+            FileSystem.DeleteFile(file.FullName, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin, UICancelOption.ThrowException);
         }
         else if (deleteMode == DeleteModes.RecycleBinShowErrors)
         {
@@ -347,6 +292,61 @@ public class SystemFunctions
             {
                 MessageBox.Show(Resources.error + "\nCould not change registry settings: " + ex);
             }
+        }
+    }
+
+    private static bool IsDirLocked(string path)
+    {
+        try
+        {
+            // UGLY hack to determine whether we have write access
+            // to a specific directory
+
+            var random = new Random();
+
+            var tempName = path + "deltest";
+
+            var counter = 0;
+
+            while (Directory.Exists(tempName))
+            {
+                tempName = path + "deltest" + random.Next(0, 9999);
+
+                if (counter > 100)
+                {
+                    return true; // Something strange is going on... stop here...
+                }
+
+                counter++;
+            }
+
+            Directory.Move(path,     tempName);
+            Directory.Move(tempName, path);
+
+            return false;
+        }
+        catch //(Exception ex)
+        {
+            // Could not rename -> probably we have no 
+            // write access to the directory
+            return true;
+        }
+    }
+
+    private static bool IsFileLocked(FileInfo file)
+    {
+        try
+        {
+            using (file.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+            {
+                return false;
+            }
+        }
+        catch //(IOException)
+        {
+            // Could not open file -> probably we have no 
+            // write access to the file
+            return true;
         }
     }
 
