@@ -5,8 +5,8 @@ public class DeletionErrorEventArgs : EventArgs
 
     public DeletionErrorEventArgs(string path, string errorMessage)
     {
-        this.Path         = path;
-        this.ErrorMessage = errorMessage;
+        Path         = path;
+        ErrorMessage = errorMessage;
     }
 
     public string ErrorMessage{get; set;}

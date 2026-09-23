@@ -5,7 +5,7 @@ public class DeleteRequestFromTreeEventArgs : EventArgs
 
     public DeleteRequestFromTreeEventArgs(string directory)
     {
-        this.Directory = directory;
+        Directory = directory;
     }
 
     public string Directory{get; set;}

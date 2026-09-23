@@ -5,9 +5,9 @@ public class DeleteProcessFinishedEventArgs : EventArgs
 
     public DeleteProcessFinishedEventArgs(int deletedFolderCount, int failedFolderCount, int protectedCount)
     {
-        this.DeletedFolderCount = deletedFolderCount;
-        this.FailedFolderCount  = failedFolderCount;
-        this.ProtectedCount     = protectedCount;
+        DeletedFolderCount = deletedFolderCount;
+        FailedFolderCount  = failedFolderCount;
+        ProtectedCount     = protectedCount;
     }
 
     public int DeletedFolderCount{get; set;}

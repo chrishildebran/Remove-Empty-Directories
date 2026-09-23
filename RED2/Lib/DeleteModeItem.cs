@@ -1,14 +1,12 @@
 ﻿namespace RED2.Lib;
 
-/// <summary>
-///     List box container class thingy
-/// </summary>
+/// <summary>List box container class thingy</summary>
 public class DeleteModeItem
 {
 
     public DeleteModeItem(DeleteModes mode)
     {
-        this.DeleteMode = mode;
+        DeleteMode = mode;
     }
 
     public DeleteModes DeleteMode{get; set;}
@@ -20,7 +18,7 @@ public class DeleteModeItem
 
     public override string ToString()
     {
-        switch (this.DeleteMode)
+        switch (DeleteMode)
         {
             case DeleteModes.RecycleBin:
 

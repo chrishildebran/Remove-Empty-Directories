@@ -1,22 +1,19 @@
 ﻿namespace RED2.Lib;
 
-/// <summary>
-///     Handles tree related things
-///     TODO: Handle null references within tree nodes
-/// </summary>
+/// <summary>Handles tree related things TODO: Handle null references within tree nodes</summary>
 public class TreeManager
 {
 
     public TreeManager(TreeView dirTree, Label fastModeInfoLabel)
     {
-        this.treeView            =  dirTree;
-        this.treeView.MouseClick += this.tvFolders_MouseClick;
+        treeView            =  dirTree;
+        treeView.MouseClick += tvFolders_MouseClick;
 
         this.fastModeInfoLabel = fastModeInfoLabel;
 
-        this.ResetTree();
+        ResetTree();
 
-        this.rootPath = "";
+        rootPath = "";
     }
 
     public event EventHandler<DeleteRequestFromTreeEventArgs> OnDeleteRequest;
@@ -25,29 +22,18 @@ public class TreeManager
 
     private bool FastMode{get; set;} = true;
 
-    /// <summary>
-    ///     Add or update directory tree node
-    /// </summary>
-    /// <param
-    ///     name="path">
-    ///     Directory path
-    /// </param>
-    /// <param
-    ///     name="statusType">
-    ///     Result status
-    /// </param>
-    /// <param
-    ///     name="optionalErrorMsg">
-    ///     Error message (optional)
-    /// </param>
+    /// <summary>Add or update directory tree node</summary>
+    /// <param name = "path">Directory path</param>
+    /// <param name = "statusType">Result status</param>
+    /// <param name = "optionalErrorMsg">Error message (optional)</param>
     /// <returns></returns>
     public TreeNode AddOrUpdateDirectoryNode(string path, DirectorySearchStatusTypes statusType, string optionalErrorMsg)
     {
-        if (this.directoryToTreeNodeMapping.ContainsKey(path))
+        if (directoryToTreeNodeMapping.ContainsKey(path))
         {
             // Just update the style if the node already exists
-            var node = this.directoryToTreeNodeMapping[path];
-            this.ApplyNodeStyle(node, path, statusType, optionalErrorMsg);
+            var node = directoryToTreeNodeMapping[path];
+            ApplyNodeStyle(node, path, statusType, optionalErrorMsg);
 
             return node;
         }
@@ -58,35 +44,33 @@ public class TreeManager
         // Create new tree node
         var newTreeNode = new TreeNode(directory.Name);
 
-        this.ApplyNodeStyle(newTreeNode, path, statusType, optionalErrorMsg);
+        ApplyNodeStyle(newTreeNode, path, statusType, optionalErrorMsg);
 
         newTreeNode.Tag = directory;
 
-        if (directory.Parent.FullName.Trim('\\').Equals(this.rootPath, StringComparison.OrdinalIgnoreCase))
+        if (directory.Parent.FullName.Trim('\\').Equals(rootPath, StringComparison.OrdinalIgnoreCase))
         {
-            this.rootNode.Nodes.Add(newTreeNode);
+            rootNode.Nodes.Add(newTreeNode);
         }
         else
         {
-            var parentNode = this.FindOrCreateDirectoryNodeByPath(directory.Parent.FullName);
+            var parentNode = FindOrCreateDirectoryNodeByPath(directory.Parent.FullName);
             parentNode.Nodes.Add(newTreeNode);
         }
 
-        this.directoryToTreeNodeMapping.Add(path, newTreeNode);
+        directoryToTreeNodeMapping.Add(path, newTreeNode);
 
-        this.ScrollToNode(newTreeNode);
+        ScrollToNode(newTreeNode);
 
         return newTreeNode;
     }
 
-    /// <summary>
-    ///     Returns the selected folder path
-    /// </summary>
+    /// <summary>Returns the selected folder path</summary>
     public string GetSelectedFolderPath()
     {
-        if (this.treeView.SelectedNode != null && this.treeView.SelectedNode.Tag != null && this.treeView.SelectedNode.Tag is DirectoryInfo)
+        if (treeView.SelectedNode != null && treeView.SelectedNode.Tag != null && treeView.SelectedNode.Tag is DirectoryInfo)
         {
-            return ((DirectoryInfo)this.treeView.SelectedNode.Tag).FullName;
+            return ((DirectoryInfo)treeView.SelectedNode.Tag).FullName;
         }
 
         return "";
@@ -94,127 +78,119 @@ public class TreeManager
 
     public void OnDeletionProcessFinished()
     {
-        this.ShowFastModeResults();
+        ShowFastModeResults();
     }
 
     public void OnDeletionProcessStart()
     {
-        if (this.FastMode)
+        if (FastMode)
         {
-            this.treeView.Nodes.Clear();
-            this.SuspendTreeViewForFastMode();
+            treeView.Nodes.Clear();
+            SuspendTreeViewForFastMode();
         }
     }
 
     public void OnProcessCancelled()
     {
-        this.ShowFastModeResults();
+        ShowFastModeResults();
     }
 
     public void OnSearchFinished()
     {
-        this.ShowFastModeResults();
+        ShowFastModeResults();
     }
 
     public void OnSearchStart(DirectoryInfo directory)
     {
-        this.ResetTree();
+        ResetTree();
 
 
         // Disable UI updates when fast mode is enabled
-        if (this.FastMode)
+        if (FastMode)
         {
-            this.SuspendTreeViewForFastMode();
+            SuspendTreeViewForFastMode();
         }
 
-        this.CreateRootNode(directory, DirectoryIcons.Home);
+        CreateRootNode(directory, DirectoryIcons.Home);
     }
 
     public void SetFastMode(bool fastModeActive)
     {
-        this.FastMode = fastModeActive;
+        FastMode = fastModeActive;
 
-        if (this.FastMode)
+        if (FastMode)
         {
-            this.treeView.SuspendLayout();
+            treeView.SuspendLayout();
         }
         else
         {
-            this.ClearFastMode();
-            this.treeView.ResumeLayout();
+            ClearFastMode();
+            treeView.ResumeLayout();
         }
     }
 
     internal void DeleteSelectedDirectory()
     {
-        if (this.treeView.SelectedNode != null && this.treeView.SelectedNode.Tag != null && this.treeView.SelectedNode.Tag is DirectoryInfo)
+        if (treeView.SelectedNode != null && treeView.SelectedNode.Tag != null && treeView.SelectedNode.Tag is DirectoryInfo)
         {
-            var folder = (DirectoryInfo)this.treeView.SelectedNode.Tag;
+            var folder = (DirectoryInfo)treeView.SelectedNode.Tag;
 
-            if (this.OnDeleteRequest != null)
+            if (OnDeleteRequest != null)
             {
-                this.OnDeleteRequest(this, new DeleteRequestFromTreeEventArgs(folder.FullName));
+                OnDeleteRequest(this, new DeleteRequestFromTreeEventArgs(folder.FullName));
             }
         }
     }
 
     internal void ProtectSelected()
     {
-        if (this.treeView.SelectedNode != null)
+        if (treeView.SelectedNode != null)
         {
-            this.ProtectNode(this.treeView.SelectedNode);
+            ProtectNode(treeView.SelectedNode);
         }
     }
 
     internal void RemoveNode(string path)
     {
-        if (this.nodePropsBackup.ContainsKey(path))
+        if (nodePropsBackup.ContainsKey(path))
         {
-            this.nodePropsBackup.Remove(path);
+            nodePropsBackup.Remove(path);
         }
 
-        if (this.directoryToTreeNodeMapping.ContainsKey(path))
+        if (directoryToTreeNodeMapping.ContainsKey(path))
         {
-            this.directoryToTreeNodeMapping[path].Remove();
-            this.directoryToTreeNodeMapping.Remove(path);
+            directoryToTreeNodeMapping[path].Remove();
+            directoryToTreeNodeMapping.Remove(path);
         }
     }
 
     internal void UnprotectSelected()
     {
-        this.UnprotectNode(this.treeView.SelectedNode);
+        UnprotectNode(treeView.SelectedNode);
     }
 
-    /// <summary>
-    ///     Marks a folder with the warning or deleted icon
-    /// </summary>
-    /// <param
-    ///     name="path">
-    ///     Dir path
-    /// </param>
-    /// <param
-    ///     name="iconKey">
-    ///     Icon
-    /// </param>
+    /// <summary>Marks a folder with the warning or deleted icon</summary>
+    /// <param name = "path">Dir path</param>
+    /// <param name = "iconKey">Icon</param>
     internal void UpdateItemIcon(string path, DirectoryIcons iconKey)
     {
-        var treeNode = this.FindOrCreateDirectoryNodeByPath(path);
+        var treeNode = FindOrCreateDirectoryNodeByPath(path);
 
         treeNode.ImageKey         = iconKey.ToString();
         treeNode.SelectedImageKey = iconKey.ToString();
 
-        this.ScrollToNode(treeNode);
+        ScrollToNode(treeNode);
     }
 
     private void AddRootNode()
     {
-        if (this.rootNode == null || (this.treeView.Nodes.Count == 1 && this.treeView.Nodes[0] == this.rootNode))
+        if (rootNode == null || (treeView.Nodes.Count == 1 && treeView.Nodes[0] == rootNode))
         {
             return;
         }
 
-        this.treeView.Nodes.Clear();
-        this.treeView.Nodes.Add(this.rootNode);
+        treeView.Nodes.Clear();
+        treeView.Nodes.Add(rootNode);
     }
 
     private void ApplyNodeStyle(TreeNode treeNode, string path, DirectorySearchStatusTypes statusType, string optionalErrorMsg)
@@ -281,7 +257,7 @@ public class TreeManager
             treeNode.ForeColor = Color.Blue;
         }
 
-        if (treeNode != this.rootNode)
+        if (treeNode != rootNode)
         {
             treeNode.ImageKey         = iconKey;
             treeNode.SelectedImageKey = iconKey;
@@ -290,28 +266,28 @@ public class TreeManager
 
     private void ClearFastMode()
     {
-        this.treeView.BackColor        = SystemColors.Window;
-        this.fastModeInfoLabel.Visible = false;
+        treeView.BackColor        = SystemColors.Window;
+        fastModeInfoLabel.Visible = false;
     }
 
     private void CreateRootNode(DirectoryInfo directory, DirectoryIcons imageKey)
     {
-        this.rootPath = directory.FullName.Trim('\\');
+        rootPath = directory.FullName.Trim('\\');
 
-        this.rootNode                  = new TreeNode(directory.Name);
-        this.rootNode.Tag              = directory;
-        this.rootNode.ImageKey         = imageKey.ToString();
-        this.rootNode.SelectedImageKey = imageKey.ToString();
+        rootNode                  = new TreeNode(directory.Name);
+        rootNode.Tag              = directory;
+        rootNode.ImageKey         = imageKey.ToString();
+        rootNode.SelectedImageKey = imageKey.ToString();
 
-        this.directoryToTreeNodeMapping = new Dictionary<string, TreeNode>();
-        this.directoryToTreeNodeMapping.Add(directory.FullName, this.rootNode);
+        directoryToTreeNodeMapping = new Dictionary<string, TreeNode>();
+        directoryToTreeNodeMapping.Add(directory.FullName, rootNode);
 
-        if (!this.FastMode)
+        if (!FastMode)
 
 
             // During fast mode the root node will be added after the search finished 
         {
-            this.AddRootNode();
+            AddRootNode();
         }
     }
 
@@ -324,33 +300,33 @@ public class TreeManager
             return null;
         }
 
-        if (this.directoryToTreeNodeMapping.ContainsKey(path))
+        if (directoryToTreeNodeMapping.ContainsKey(path))
         {
-            return this.directoryToTreeNodeMapping[path];
+            return directoryToTreeNodeMapping[path];
         }
 
-        return this.AddOrUpdateDirectoryNode(path, DirectorySearchStatusTypes.NotEmpty, "");
+        return AddOrUpdateDirectoryNode(path, DirectorySearchStatusTypes.NotEmpty, "");
     }
 
     private void ProtectNode(TreeNode node)
     {
         var directory = (DirectoryInfo)node.Tag;
 
-        if (this.nodePropsBackup.ContainsKey(directory.FullName))
+        if (nodePropsBackup.ContainsKey(directory.FullName))
         {
             return;
         }
 
-        if (this.OnProtectionStatusChanged != null)
+        if (OnProtectionStatusChanged != null)
         {
-            this.OnProtectionStatusChanged(this, new ProtectionStatusChangedEventArgs(directory.FullName, true));
+            OnProtectionStatusChanged(this, new ProtectionStatusChangedEventArgs(directory.FullName, true));
         }
 
 
         // Backup node props if the user changes his mind we can restore the node
         // TODO: I'm sure there is a better way to do this, maybe this info can be stored 
         // in the node.Tag or we simply recreate this info like it's a new node.
-        this.nodePropsBackup.Add(directory.FullName, node.ImageKey + "|" + node.ForeColor.ToArgb());
+        nodePropsBackup.Add(directory.FullName, node.ImageKey + "|" + node.ForeColor.ToArgb());
 
         node.ImageKey         = "protected_icon";
         node.SelectedImageKey = "protected_icon";
@@ -358,25 +334,25 @@ public class TreeManager
 
 
         // Recursively protect directories
-        if (node.Parent != this.rootNode)
+        if (node.Parent != rootNode)
         {
-            this.ProtectNode(node.Parent);
+            ProtectNode(node.Parent);
         }
     }
 
     private void ResetTree()
     {
-        this.rootNode                   = null;
-        this.directoryToTreeNodeMapping = new Dictionary<string, TreeNode>();
-        this.nodePropsBackup            = new Dictionary<string, object>();
+        rootNode                   = null;
+        directoryToTreeNodeMapping = new Dictionary<string, TreeNode>();
+        nodePropsBackup            = new Dictionary<string, object>();
 
-        this.treeView.Nodes.Clear();
+        treeView.Nodes.Clear();
     }
 
     private void ScrollToNode(TreeNode node)
     {
         // Ignore when fast mode is enabled
-        if (!this.FastMode)
+        if (!FastMode)
         {
             node.EnsureVisible();
         }
@@ -384,36 +360,34 @@ public class TreeManager
 
     private void ShowFastModeResults()
     {
-        if (!this.FastMode)
+        if (!FastMode)
         {
             return;
         }
 
-        this.treeView.ResumeLayout();
-        this.ClearFastMode();
+        treeView.ResumeLayout();
+        ClearFastMode();
 
-        this.AddRootNode();
+        AddRootNode();
 
 
         // Scroll to root node and expand all dirs
-        this.rootNode.EnsureVisible();
-        this.treeView.ExpandAll();
+        rootNode.EnsureVisible();
+        treeView.ExpandAll();
     }
 
     private void SuspendTreeViewForFastMode()
     {
-        this.treeView.SuspendLayout();
+        treeView.SuspendLayout();
 
-        this.treeView.BackColor        = SystemColors.Control;
-        this.fastModeInfoLabel.Visible = true;
+        treeView.BackColor        = SystemColors.Control;
+        fastModeInfoLabel.Visible = true;
     }
 
-    /// <summary>
-    ///     Hack to selected the correct node
-    /// </summary>
+    /// <summary>Hack to selected the correct node</summary>
     private void tvFolders_MouseClick(object sender, MouseEventArgs e)
     {
-        this.treeView.SelectedNode = this.treeView.GetNodeAt(e.X, e.Y);
+        treeView.SelectedNode = treeView.GetNodeAt(e.X, e.Y);
     }
 
     private void UnprotectNode(TreeNode node)
@@ -422,7 +396,7 @@ public class TreeManager
         {
             var directory = (DirectoryInfo)node.Tag;
 
-            if (!this.nodePropsBackup.ContainsKey(directory.FullName))
+            if (!nodePropsBackup.ContainsKey(directory.FullName))
 
 
                 // TODO: What to do when this info is missing, show error?
@@ -432,24 +406,24 @@ public class TreeManager
 
 
             // Restore props from backup values
-            var propList = ((string)this.nodePropsBackup[directory.FullName]).Split('|');
+            var propList = ((string)nodePropsBackup[directory.FullName]).Split('|');
 
-            this.nodePropsBackup.Remove(directory.FullName);
+            nodePropsBackup.Remove(directory.FullName);
 
             node.ImageKey         = propList[0];
             node.SelectedImageKey = propList[0];
             node.ForeColor        = Color.FromArgb(int.Parse(propList[1]));
 
-            if (this.OnProtectionStatusChanged != null)
+            if (OnProtectionStatusChanged != null)
             {
-                this.OnProtectionStatusChanged(this, new ProtectionStatusChangedEventArgs(directory.FullName, false));
+                OnProtectionStatusChanged(this, new ProtectionStatusChangedEventArgs(directory.FullName, false));
             }
 
 
             // Unprotect all subnodes
             foreach (TreeNode subNode in node.Nodes)
             {
-                this.UnprotectNode(subNode);
+                UnprotectNode(subNode);
             }
         }
     }
@@ -458,10 +432,7 @@ public class TreeManager
 
     private readonly Label fastModeInfoLabel;
 
-    /// <summary>
-    ///     This dictionary holds the original properties of protected
-    ///     nodes so that they can be restored if the user undoes the action
-    /// </summary>
+    /// <summary>This dictionary holds the original properties of protected nodes so that they can be restored if the user undoes the action</summary>
     private Dictionary<string, object> nodePropsBackup = new();
 
     private TreeNode rootNode;

@@ -1,25 +1,21 @@
 ﻿namespace RED2.Lib;
 
-/// <summary>
-///     Container for runtime related data
-/// </summary>
+/// <summary>Container for runtime related data</summary>
 public class RuntimeData
 {
 
     public RuntimeData()
     {
-        this.LogMessages         = new StringBuilder();
-        this.ProtectedFolderList = new Dictionary<string, bool>();
-        this.EmptyFolderList     = new List<string>();
+        LogMessages         = new StringBuilder();
+        ProtectedFolderList = new Dictionary<string, bool>();
+        EmptyFolderList     = new List<string>();
     }
 
     public DeleteModes DeleteMode{get; set;}
 
     public bool DisableLogging{get; set;}
 
-    /// <summary>
-    ///     List containing all empty directories that were found
-    /// </summary>
+    /// <summary>List containing all empty directories that were found</summary>
     public List<string> EmptyFolderList{get; set;}
 
     public bool HideScanErrors{get; set;}
@@ -51,24 +47,24 @@ public class RuntimeData
 
     public void AddLogMessage(string msg)
     {
-        this.LogMessages.AppendLine(DateTime.Now.ToString("r") + "\t" + msg);
+        LogMessages.AppendLine(DateTime.Now.ToString("r") + "\t" + msg);
     }
 
     public string[] GetIgnoreDirectories()
     {
-        return this.FixNewLines(this.IgnoreDirectoriesList);
+        return FixNewLines(IgnoreDirectoriesList);
     }
 
     public string[] GetIgnoreFileList()
     {
-        return this.FixNewLines(this.IgnoreFiles);
+        return FixNewLines(IgnoreFiles);
     }
 
     internal void AddLogSpacer()
     {
-        if (this.LogMessages.Length > 0)
+        if (LogMessages.Length > 0)
         {
-            this.LogMessages.Append(Environment.NewLine);
+            LogMessages.Append(Environment.NewLine);
         }
     }
 

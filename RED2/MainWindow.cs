@@ -6,17 +6,13 @@ using ErrorEventArgs = Lib.ErrorEventArgs;
 public partial class MainWindow : Form
 {
 
-    /// <summary>
-    ///     Constructor
-    /// </summary>
+    /// <summary>Constructor</summary>
     public MainWindow()
     {
-        this.InitializeComponent();
+        InitializeComponent();
     }
 
-    /// <summary>
-    ///     Check if we were started with admin rights
-    /// </summary>
+    /// <summary>Check if we were started with admin rights</summary>
     private void AdminCheck()
     {
         var principal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
@@ -25,22 +21,22 @@ public partial class MainWindow : Form
         {
             var isIntegrated = SystemFunctions.IsRegKeyIntegratedIntoWindowsExplorer();
 
-            this.btnExplorerIntegrate.Enabled = !isIntegrated;
-            this.btnExplorerRemove.Enabled    = isIntegrated;
+            btnExplorerIntegrate.Enabled = !isIntegrated;
+            btnExplorerRemove.Enabled    = isIntegrated;
 
-            this.Text += " (Admin mode)";
+            Text += " (Admin mode)";
 
-            this.lblReqAdmin.ForeColor = Color.DarkGray;
+            lblReqAdmin.ForeColor = Color.DarkGray;
         }
         else
         {
-            this.groupBoxExplorerIntegration.Enabled = false;
+            groupBoxExplorerIntegration.Enabled = false;
 
 
             // Highlight admin info text bold 
             // Note: Changed it from red to bold because red looked like an error
             // but actually it's just an info message
-            this.lblReqAdmin.Font = new Font(DefaultFont, FontStyle.Bold);
+            lblReqAdmin.Font = new Font(DefaultFont, FontStyle.Bold);
 
 
             // this.btnExplorerIntegrate.Enabled = false;
@@ -48,50 +44,46 @@ public partial class MainWindow : Form
         }
     }
 
-    /// <summary>
-    ///     Bind config settings to UI controls
-    /// </summary>
+    /// <summary>Bind config settings to UI controls</summary>
     private void BindConfigToControls()
     {
-        this.tbFolder.DataBindings.Add("Text", Settings.Default, "last_used_directory");
-        this.cbFastSearchMode.DataBindings.Add("Checked", Settings.Default, "fast_search_mode");
+        tbFolder.DataBindings.Add("Text", Settings.Default, "last_used_directory");
+        cbFastSearchMode.DataBindings.Add("Checked", Settings.Default, "fast_search_mode");
 
-        this.cbIgnoreHiddenFolders.DataBindings.Add("Checked", Settings.Default, "dont_scan_hidden_folders");
+        cbIgnoreHiddenFolders.DataBindings.Add("Checked", Settings.Default, "dont_scan_hidden_folders");
 
-        this.cbIgnore0kbFiles.DataBindings.Add("Checked", Settings.Default, "ignore_0kb_files");
-        this.cbKeepSystemFolders.DataBindings.Add("Checked", Settings.Default, "keep_system_folders");
-        this.cbClipboardDetection.DataBindings.Add("Checked", Settings.Default, "clipboard_detection");
-        this.cbHideScanErrors.DataBindings.Add("Checked", Settings.Default, "hide_scan_errors");
+        cbIgnore0kbFiles.DataBindings.Add("Checked", Settings.Default, "ignore_0kb_files");
+        cbKeepSystemFolders.DataBindings.Add("Checked", Settings.Default, "keep_system_folders");
+        cbClipboardDetection.DataBindings.Add("Checked", Settings.Default, "clipboard_detection");
+        cbHideScanErrors.DataBindings.Add("Checked", Settings.Default, "hide_scan_errors");
 
-        this.tbIgnoreFiles.DataBindings.Add("Text", Settings.Default, "ignore_files");
-        this.tbIgnoreFolders.DataBindings.Add("Text", Settings.Default, "ignore_directories");
+        tbIgnoreFiles.DataBindings.Add("Text", Settings.Default, "ignore_files");
+        tbIgnoreFolders.DataBindings.Add("Text", Settings.Default, "ignore_directories");
 
-        this.nuMaxDepth.DataBindings.Add("Value", Settings.Default, "max_depth");
+        nuMaxDepth.DataBindings.Add("Value", Settings.Default, "max_depth");
 
-        this.nuInfiniteLoopDetectionCount.DataBindings.Add("Value", Settings.Default, "infinite_loop_detection_count");
+        nuInfiniteLoopDetectionCount.DataBindings.Add("Value", Settings.Default, "infinite_loop_detection_count");
 
-        this.nuPause.DataBindings.Add("Value", Settings.Default, "pause_between");
-        this.cbIgnoreErrors.DataBindings.Add("Checked", Settings.Default, "ignore_deletion_errors");
-        this.nuFolderAge.DataBindings.Add("Value", Settings.Default, "min_folder_age_hours");
+        nuPause.DataBindings.Add("Value", Settings.Default, "pause_between");
+        cbIgnoreErrors.DataBindings.Add("Checked", Settings.Default, "ignore_deletion_errors");
+        nuFolderAge.DataBindings.Add("Value", Settings.Default, "min_folder_age_hours");
 
 
         // Populate delete mode item list
         foreach (var d in DeleteModeItem.GetList())
         {
-            this.cbDeleteMode.Items.Add(new DeleteModeItem(d));
+            cbDeleteMode.Items.Add(new DeleteModeItem(d));
         }
 
-        this.cbDeleteMode.DataBindings.Add("SelectedIndex", Settings.Default, "delete_mode");
+        cbDeleteMode.DataBindings.Add("SelectedIndex", Settings.Default, "delete_mode");
     }
 
     private void btnCancel_Click(object sender, EventArgs e)
     {
-        this.core.CancelCurrentProcess();
+        core.CancelCurrentProcess();
     }
 
-    /// <summary>
-    ///     Let the user select a folder
-    /// </summary>
+    /// <summary>Let the user select a folder</summary>
     private void btnChooseFolder_Click(object sender, EventArgs e)
     {
         Settings.Default.last_used_directory = SystemFunctions.ChooseDirectoryDialog(Settings.Default.last_used_directory);
@@ -183,42 +175,42 @@ public partial class MainWindow : Form
 
     private void btnDelete_Click(object sender, EventArgs e)
     {
-        this.data.AddLogSpacer();
-        this.SetStatusAndLogMessage(Resources.started_deletion_process);
+        data.AddLogSpacer();
+        SetStatusAndLogMessage(Resources.started_deletion_process);
 
-        this.btnScan.Enabled = false;
-        this.UpdateContextMenu(this.cmStrip, false);
-        this.btnDelete.Enabled = false;
+        btnScan.Enabled = false;
+        UpdateContextMenu(cmStrip, false);
+        btnDelete.Enabled = false;
 
-        this.SetProcessActiveLock(true);
+        SetProcessActiveLock(true);
 
-        this.UpdateRuntimeDataObject();
+        UpdateRuntimeDataObject();
 
-        this.tree.OnDeletionProcessStart();
+        tree.OnDeletionProcessStart();
 
-        this.runtimeWatch.Reset();
-        this.runtimeWatch.Start();
+        runtimeWatch.Reset();
+        runtimeWatch.Start();
 
-        this.core.StartDeleteProcess();
+        core.StartDeleteProcess();
     }
 
     private void btnExit_Click(object sender, EventArgs e)
     {
-        this.Close();
+        Close();
     }
 
     private void btnExplorerIntegrate_Click(object sender, EventArgs e)
     {
         SystemFunctions.AddOrRemoveRegKey(true);
-        this.btnExplorerRemove.Enabled    = true;
-        this.btnExplorerIntegrate.Enabled = false;
+        btnExplorerRemove.Enabled    = true;
+        btnExplorerIntegrate.Enabled = false;
     }
 
     private void btnExplorerRemove_Click(object sender, EventArgs e)
     {
         SystemFunctions.AddOrRemoveRegKey(false);
-        this.btnExplorerRemove.Enabled    = false;
-        this.btnExplorerIntegrate.Enabled = true;
+        btnExplorerRemove.Enabled    = false;
+        btnExplorerIntegrate.Enabled = true;
     }
 
     private void btnResetConfig_Click(object sender, EventArgs e)
@@ -227,13 +219,11 @@ public partial class MainWindow : Form
         {
             Settings.Default.Reset();
 
-            this.tree.SetFastMode(Settings.Default.fast_search_mode);
+            tree.SetFastMode(Settings.Default.fast_search_mode);
         }
     }
 
-    /// <summary>
-    ///     Starts the Scan-Progress
-    /// </summary>
+    /// <summary>Starts the Scan-Progress</summary>
     private void btnScan_Click(object sender, EventArgs e)
     {
         // Check given folder
@@ -241,7 +231,7 @@ public partial class MainWindow : Form
 
         try
         {
-            selectedDirectory = new DirectoryInfo(this.tbFolder.Text);
+            selectedDirectory = new DirectoryInfo(tbFolder.Text);
 
             if (!selectedDirectory.Exists)
             {
@@ -257,24 +247,24 @@ public partial class MainWindow : Form
             return;
         }
 
-        this.data.StartFolder = selectedDirectory;
-        this.UpdateRuntimeDataObject();
+        data.StartFolder = selectedDirectory;
+        UpdateRuntimeDataObject();
 
-        this.pbProgressStatus.Style = ProgressBarStyle.Marquee;
+        pbProgressStatus.Style = ProgressBarStyle.Marquee;
 
-        this.SetProcessActiveLock(true);
+        SetProcessActiveLock(true);
 
-        this.tree.OnSearchStart(this.data.StartFolder);
+        tree.OnSearchStart(data.StartFolder);
 
-        this.UpdateContextMenu(this.cmStrip, false);
+        UpdateContextMenu(cmStrip, false);
 
-        this.data.AddLogSpacer();
-        this.SetStatusAndLogMessage(Resources.searching_empty_folders);
+        data.AddLogSpacer();
+        SetStatusAndLogMessage(Resources.searching_empty_folders);
 
-        this.runtimeWatch.Reset();
-        this.runtimeWatch.Start();
+        runtimeWatch.Reset();
+        runtimeWatch.Start();
 
-        this.core.SearchingForEmptyDirectories();
+        core.SearchingForEmptyDirectories();
     }
 
     private void btnShowConfig_Click(object sender, EventArgs e)
@@ -285,54 +275,54 @@ public partial class MainWindow : Form
     private void btnShowLog_Click(object sender, EventArgs e)
     {
         var logWindow = new LogWindow();
-        logWindow.SetLog(this.core.GetLogMessages());
+        logWindow.SetLog(core.GetLogMessages());
         logWindow.ShowDialog();
         logWindow.Dispose();
     }
 
     private void cmStrip_Opening(object sender, CancelEventArgs e)
     {
-        this.openFolderToolStripMenuItem.Enabled = this.tvFolders.SelectedNode != null;
+        openFolderToolStripMenuItem.Enabled = tvFolders.SelectedNode != null;
     }
 
     private void core_OnAborted(object sender, EventArgs e)
     {
-        this.pbProgressStatus.Style = ProgressBarStyle.Blocks;
+        pbProgressStatus.Style = ProgressBarStyle.Blocks;
 
-        if (this.core.CurrentProcessStep == WorkflowSteps.DeleteProcessRunning)
+        if (core.CurrentProcessStep == WorkflowSteps.DeleteProcessRunning)
         {
-            this.SetStatusAndLogMessage(Resources.deletion_aborted);
+            SetStatusAndLogMessage(Resources.deletion_aborted);
         }
         else
         {
-            this.SetStatusAndLogMessage(Resources.process_aborted);
+            SetStatusAndLogMessage(Resources.process_aborted);
         }
 
-        this.btnScan.Enabled   = true;
-        this.btnDelete.Enabled = false;
+        btnScan.Enabled   = true;
+        btnDelete.Enabled = false;
 
-        this.SetProcessActiveLock(false);
-        this.tree.OnProcessCancelled();
+        SetProcessActiveLock(false);
+        tree.OnProcessCancelled();
     }
 
     private void core_OnCancelled(object sender, EventArgs e)
     {
-        this.pbProgressStatus.Style = ProgressBarStyle.Blocks;
+        pbProgressStatus.Style = ProgressBarStyle.Blocks;
 
-        if (this.core.CurrentProcessStep == WorkflowSteps.DeleteProcessRunning)
+        if (core.CurrentProcessStep == WorkflowSteps.DeleteProcessRunning)
         {
-            this.SetStatusAndLogMessage(Resources.deletion_aborted);
+            SetStatusAndLogMessage(Resources.deletion_aborted);
         }
         else
         {
-            this.SetStatusAndLogMessage(Resources.process_cancelled);
+            SetStatusAndLogMessage(Resources.process_cancelled);
         }
 
-        this.btnScan.Enabled   = true;
-        this.btnDelete.Enabled = false;
+        btnScan.Enabled   = true;
+        btnDelete.Enabled = false;
 
-        this.SetProcessActiveLock(false);
-        this.tree.OnProcessCancelled();
+        SetProcessActiveLock(false);
+        tree.OnProcessCancelled();
     }
 
     private void core_OnDeleteError(object sender, DeletionErrorEventArgs e)
@@ -348,17 +338,17 @@ public partial class MainWindow : Form
 
         if (dialogResult == DialogResult.Abort)
         {
-            this.core.AbortDeletion();
+            core.AbortDeletion();
         }
         else
         {
             // Hack: retry means -> ignore all errors
             if (dialogResult == DialogResult.Retry)
             {
-                this.data.IgnoreAllErrors = true;
+                data.IgnoreAllErrors = true;
             }
 
-            this.core.ContinueDeleteProcess();
+            core.ContinueDeleteProcess();
         }
     }
 
@@ -368,91 +358,91 @@ public partial class MainWindow : Form
         {
             case DirectoryDeletionStatusTypes.Deleted:
 
-                this.lbStatus.Text = string.Format(Resources.removing_empty_folders, e.ProgressStatus + 1, e.FolderCount);
+                lbStatus.Text = string.Format(Resources.removing_empty_folders, e.ProgressStatus + 1, e.FolderCount);
 
-                this.tree.UpdateItemIcon(e.Path, DirectoryIcons.Deleted);
+                tree.UpdateItemIcon(e.Path, DirectoryIcons.Deleted);
 
                 break;
 
             case DirectoryDeletionStatusTypes.Protected:
 
-                this.tree.UpdateItemIcon(e.Path, DirectoryIcons.ProtectedIcon);
+                tree.UpdateItemIcon(e.Path, DirectoryIcons.ProtectedIcon);
 
                 break;
 
             default:
 
-                this.tree.UpdateItemIcon(e.Path, DirectoryIcons.FolderWarning);
+                tree.UpdateItemIcon(e.Path, DirectoryIcons.FolderWarning);
 
                 break;
         }
 
-        this.pbProgressStatus.Value = e.ProgressStatus;
+        pbProgressStatus.Value = e.ProgressStatus;
     }
 
     private void core_OnDeleteProcessFinished(object sender, DeleteProcessFinishedEventArgs e)
     {
-        this.runtimeWatch.Stop();
+        runtimeWatch.Stop();
 
-        this.SetStatusAndLogMessage(string.Format(Resources.delete_process_finished, e.DeletedFolderCount, e.FailedFolderCount, e.ProtectedCount, this.runtimeWatch.Elapsed.Minutes, this.runtimeWatch.Elapsed.Seconds));
+        SetStatusAndLogMessage(string.Format(Resources.delete_process_finished, e.DeletedFolderCount, e.FailedFolderCount, e.ProtectedCount, runtimeWatch.Elapsed.Minutes, runtimeWatch.Elapsed.Seconds));
 
-        this.pbProgressStatus.Value = this.pbProgressStatus.Maximum;
+        pbProgressStatus.Value = pbProgressStatus.Maximum;
 
-        this.btnDelete.Enabled = false;
-        this.btnScan.Enabled   = true;
+        btnDelete.Enabled = false;
+        btnScan.Enabled   = true;
 
-        this.SetProcessActiveLock(false);
+        SetProcessActiveLock(false);
 
 
         // Increase deletion statistics (shown in about tab)
         Settings.Default.delete_stats += e.DeletedFolderCount;
 
-        this.lblRedStats.Text = string.Format(Resources.red_deleted, Settings.Default.delete_stats);
+        lblRedStats.Text = string.Format(Resources.red_deleted, Settings.Default.delete_stats);
 
-        this.tree.OnDeletionProcessFinished();
+        tree.OnDeletionProcessFinished();
     }
 
     private void core_OnError(object sender, ErrorEventArgs e)
     {
-        this.pbProgressStatus.Style = ProgressBarStyle.Blocks;
+        pbProgressStatus.Style = ProgressBarStyle.Blocks;
 
         MessageBox.Show(this, "Error: " + e.Message, "RED error message");
     }
 
     private void core_OnFoundEmptyDir(object sender, FoundEmptyDirInfoEventArgs e)
     {
-        this.tree.AddOrUpdateDirectoryNode(e.Directory, e.Type, e.ErrorMessage);
+        tree.AddOrUpdateDirectoryNode(e.Directory, e.Type, e.ErrorMessage);
     }
 
     private void core_OnFoundFinishedScanForEmptyDirs(object sender, FinishedScanForEmptyDirsEventArgs e)
     {
         // Search finished
 
-        this.runtimeWatch.Stop();
+        runtimeWatch.Stop();
 
-        this.SetStatusAndLogMessage(string.Format(Resources.found_x_empty_folders, e.EmptyFolderCount, e.FolderCount, this.runtimeWatch.Elapsed.Minutes, this.runtimeWatch.Elapsed.Seconds));
+        SetStatusAndLogMessage(string.Format(Resources.found_x_empty_folders, e.EmptyFolderCount, e.FolderCount, runtimeWatch.Elapsed.Minutes, runtimeWatch.Elapsed.Seconds));
 
-        this.btnDelete.Enabled        = e.EmptyFolderCount > 0;
-        this.pbProgressStatus.Style   = ProgressBarStyle.Blocks;
-        this.pbProgressStatus.Maximum = e.EmptyFolderCount;
-        this.pbProgressStatus.Minimum = 0;
-        this.pbProgressStatus.Value   = this.pbProgressStatus.Maximum;
-        this.pbProgressStatus.Step    = 5;
+        btnDelete.Enabled        = e.EmptyFolderCount > 0;
+        pbProgressStatus.Style   = ProgressBarStyle.Blocks;
+        pbProgressStatus.Maximum = e.EmptyFolderCount;
+        pbProgressStatus.Minimum = 0;
+        pbProgressStatus.Value   = pbProgressStatus.Maximum;
+        pbProgressStatus.Step    = 5;
 
-        this.SetProcessActiveLock(false);
+        SetProcessActiveLock(false);
 
-        this.btnScan.Enabled = true;
+        btnScan.Enabled = true;
 
-        this.UpdateContextMenu(this.cmStrip, true);
+        UpdateContextMenu(cmStrip, true);
 
-        this.tree.OnSearchFinished();
+        tree.OnSearchFinished();
 
-        this.btnScan.Text = Resources.btn_scan_again;
+        btnScan.Text = Resources.btn_scan_again;
     }
 
     private void core_OnProgressChanged(object sender, ProgressChangedEventArgs e)
     {
-        this.lbStatus.Text = (string)e.UserState;
+        lbStatus.Text = (string)e.UserState;
     }
 
     private void Default_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -472,13 +462,13 @@ public partial class MainWindow : Form
         }
         else if (e.SettingName == "fast_search_mode")
         {
-            this.tree.SetFastMode((bool)e.NewValue);
+            tree.SetFastMode((bool)e.NewValue);
         }
     }
 
     private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        this.tree.DeleteSelectedDirectory();
+        tree.DeleteSelectedDirectory();
     }
 
     private void DrawDirectoryIcons()
@@ -501,7 +491,7 @@ public partial class MainWindow : Form
 
         foreach (var key in icons.Keys)
         {
-            var icon = this.ilFolderIcons.Images[key];
+            var icon = ilFolderIcons.Images[key];
 
             var picIcon = new PictureBox();
             picIcon.Image    = icon;
@@ -514,8 +504,8 @@ public partial class MainWindow : Form
             picLabel.Location = new Point(xpos + icon.Width + 2, ypos + 2);
             picLabel.Name     = "picLabel";
 
-            this.pnlIcons.Controls.Add(picIcon);
-            this.pnlIcons.Controls.Add(picLabel);
+            pnlIcons.Controls.Add(picIcon);
+            pnlIcons.Controls.Add(picLabel);
 
             ypos += icon.Height + 6;
         }
@@ -527,7 +517,7 @@ public partial class MainWindow : Form
     {
         // Detect paths in the clipboard
 
-        if (this.cbClipboardDetection.Checked && Clipboard.ContainsText(TextDataFormat.Text))
+        if (cbClipboardDetection.Checked && Clipboard.ContainsText(TextDataFormat.Text))
         {
             var clipValue = Clipboard.GetText(TextDataFormat.Text);
 
@@ -544,10 +534,7 @@ public partial class MainWindow : Form
         }
     }
 
-    /// <summary>
-    ///     Part of the drag & drop functions
-    ///     (you can drag a folder into RED)
-    /// </summary>
+    /// <summary>Part of the drag & drop functions (you can drag a folder into RED)</summary>
     private void fMain_DragDrop(object sender, DragEventArgs e)
     {
         var s = (string[])e.Data.GetData(DataFormats.FileDrop, false);
@@ -562,10 +549,7 @@ public partial class MainWindow : Form
         }
     }
 
-    /// <summary>
-    ///     Part of the drag & drop functions
-    ///     (you can drag a folder into RED)
-    /// </summary>
+    /// <summary>Part of the drag & drop functions (you can drag a folder into RED)</summary>
     private void fMain_DragEnter(object sender, DragEventArgs e)
     {
         if (!e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -578,68 +562,66 @@ public partial class MainWindow : Form
         }
     }
 
-    /// <summary>
-    ///     On load
-    /// </summary>
+    /// <summary>On load</summary>
     private void fMain_Load(object sender, EventArgs e)
     {
         #region Init RED core
 
-        this.core = new RedCore(this, this.data);
+        core = new RedCore(this, data);
 
 
         // Attach events
-        this.core.OnError     += this.core_OnError;
-        this.core.OnCancelled += this.core_OnCancelled;
-        this.core.OnAborted   += this.core_OnAborted;
+        core.OnError     += core_OnError;
+        core.OnCancelled += core_OnCancelled;
+        core.OnAborted   += core_OnAborted;
 
-        this.core.OnProgressChanged     += this.core_OnProgressChanged;
-        this.core.OnFoundEmptyDirectory += this.core_OnFoundEmptyDir;
+        core.OnProgressChanged     += core_OnProgressChanged;
+        core.OnFoundEmptyDirectory += core_OnFoundEmptyDir;
 
-        this.core.OnFinishedScanForEmptyDirs += this.core_OnFoundFinishedScanForEmptyDirs;
+        core.OnFinishedScanForEmptyDirs += core_OnFoundFinishedScanForEmptyDirs;
 
-        this.core.OnDeleteProcessChanged += this.core_OnDeleteProcessChanged;
+        core.OnDeleteProcessChanged += core_OnDeleteProcessChanged;
 
-        this.core.OnDeleteProcessFinished += this.core_OnDeleteProcessFinished;
+        core.OnDeleteProcessFinished += core_OnDeleteProcessFinished;
 
-        this.core.OnDeleteError += this.core_OnDeleteError;
+        core.OnDeleteError += core_OnDeleteError;
 
         #endregion
 
 
         // Subscribe to settings events
-        Settings.Default.PropertyChanged += this.Default_PropertyChanged;
-        Settings.Default.SettingChanging += this.Default_SettingChanging;
+        Settings.Default.PropertyChanged += Default_PropertyChanged;
+        Settings.Default.SettingChanging += Default_SettingChanging;
 
 
         // Init tree manager / helper
-        this.tree = new TreeManager(this.tvFolders, this.lbFastModeInfo);
-        this.tree.SetFastMode(Settings.Default.fast_search_mode);
+        tree = new TreeManager(tvFolders, lbFastModeInfo);
+        tree.SetFastMode(Settings.Default.fast_search_mode);
 
-        this.tree.OnProtectionStatusChanged += this.tree_OnProtectionStatusChanged;
+        tree.OnProtectionStatusChanged += tree_OnProtectionStatusChanged;
 
-        this.tree.OnDeleteRequest += this.tree_OnDeleteRequest;
+        tree.OnDeleteRequest += tree_OnDeleteRequest;
 
-        this.BindConfigToControls();
+        BindConfigToControls();
 
 
         // Update labels
-        this.lblRedStats.Text = string.Format(Resources.red_deleted, Settings.Default.delete_stats);
+        lblRedStats.Text = string.Format(Resources.red_deleted, Settings.Default.delete_stats);
 
-        this.lbAppTitle.Text += $"{Assembly.GetExecutingAssembly().GetName().Version}";
-        this.lbStatus.Text   =  "";
+        lbAppTitle.Text += $"{Assembly.GetExecutingAssembly().GetName().Version}";
+        lbStatus.Text   =  "";
 
-        this.AdminCheck();
+        AdminCheck();
 
-        this.UpdateContextMenu(this.cmStrip, false);
+        UpdateContextMenu(cmStrip, false);
 
-        this.pbProgressStatus.Maximum = 100;
-        this.pbProgressStatus.Minimum = 0;
-        this.pbProgressStatus.Step    = 5;
+        pbProgressStatus.Maximum = 100;
+        pbProgressStatus.Minimum = 0;
+        pbProgressStatus.Step    = 5;
 
-        this.DrawDirectoryIcons();
+        DrawDirectoryIcons();
 
-        this.ProcessCommandLineArgs();
+        ProcessCommandLineArgs();
     }
 
     private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -664,12 +646,10 @@ public partial class MainWindow : Form
 
     private void openFolderToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        SystemFunctions.OpenDirectoryWithExplorer(this.tree.GetSelectedFolderPath());
+        SystemFunctions.OpenDirectoryWithExplorer(tree.GetSelectedFolderPath());
     }
 
-    /// <summary>
-    ///     Read and apply command line arguments
-    /// </summary>
+    /// <summary>Read and apply command line arguments</summary>
     private void ProcessCommandLineArgs()
     {
         var args = Environment.GetCommandLineArgs();
@@ -692,74 +672,70 @@ public partial class MainWindow : Form
 
     private void protectFolderFromBeingDeletedToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        this.tree.ProtectSelected();
+        tree.ProtectSelected();
     }
 
     private void proToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        if (this.tvFolders.SelectedNode == null)
+        if (tvFolders.SelectedNode == null)
         {
             return;
         }
 
-        Settings.Default.ignore_directories += "\r\n" + ((DirectoryInfo)this.tvFolders.SelectedNode.Tag).FullName;
+        Settings.Default.ignore_directories += "\r\n" + ((DirectoryInfo)tvFolders.SelectedNode.Tag).FullName;
 
 
         // Focus third tab (Ignore list)
-        this.tcMain.SelectedIndex = 2;
+        tcMain.SelectedIndex = 2;
 
 
         // TODO: Update the results + tree to reflect the newly ignored item
         // Current solution: The user has to do a complete rescan
-        this.btnDelete.Enabled = false;
+        btnDelete.Enabled = false;
     }
 
     private void scanOnlyThisDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        Settings.Default.last_used_directory = this.tree.GetSelectedFolderPath();
-        this.btnScan.PerformClick();
+        Settings.Default.last_used_directory = tree.GetSelectedFolderPath();
+        btnScan.PerformClick();
     }
 
-    /// <summary>
-    ///     Locks various GUI elements when search or deletion is active
-    /// </summary>
-    /// <param
-    ///     name="isActive">
-    /// </param>
+    /// <summary>Locks various GUI elements when search or deletion is active</summary>
+    /// <param name = "isActive"></param>
     private void SetProcessActiveLock(bool isActive)
     {
-        this.btnCancel.Enabled  = isActive;
-        this.btnShowLog.Enabled = !isActive;
+        btnCancel.Enabled  = isActive;
+        btnShowLog.Enabled = !isActive;
 
-        this.gbOptions.Enabled       = !isActive;
-        this.gbDeleteMode.Enabled    = !isActive;
-        this.tbIgnoreFolders.Enabled = !isActive;
+        gbOptions.Enabled       = !isActive;
+        gbDeleteMode.Enabled    = !isActive;
+        tbIgnoreFolders.Enabled = !isActive;
 
-        this.gbAdvancedSettings.Enabled = !isActive;
-        this.gbIgnoreFilenames.Enabled  = !isActive;
+        gbAdvancedSettings.Enabled = !isActive;
+        gbIgnoreFilenames.Enabled  = !isActive;
 
-        this.btnResetConfig.Enabled = !isActive;
+        btnResetConfig.Enabled = !isActive;
     }
 
     private void SetStatusAndLogMessage(string msg)
     {
-        this.lbStatus.Text = msg;
-        this.data.AddLogMessage(msg);
+        lbStatus.Text = msg;
+        data.AddLogMessage(msg);
     }
 
     private void tbFolder_MouseDoubleClick(object sender, MouseEventArgs e)
     {
-        this.tbFolder.SelectAll();
+        tbFolder.SelectAll();
     }
 
     private void toolStripCollapseAll_Click(object sender, EventArgs e)
     {
-        this.tvFolders.CollapseAll();
+        tvFolders.CollapseAll();
     }
 
     private void toolStripExpandAll_Click(object sender, EventArgs e)
     {
-        this.tvFolders.ExpandAll();
+        tvFolders.ExpandAll();
     }
 
     private void tree_OnDeleteRequest(object sender, DeleteRequestFromTreeEventArgs e)
@@ -775,13 +751,13 @@ public partial class MainWindow : Form
 
 
             // Remove root node
-            this.tree.RemoveNode(deletePath);
+            tree.RemoveNode(deletePath);
 
-            this.data.AddLogMessage("Manually deleted: \"" + deletePath + "\" including all subdirectories");
+            data.AddLogMessage("Manually deleted: \"" + deletePath + "\" including all subdirectories");
 
 
             // Disable the delete button because the user has to re-scan after he manually deleted a directory
-            this.btnDelete.Enabled = false;
+            btnDelete.Enabled = false;
         }
         catch (OperationCanceledException)
         {
@@ -789,7 +765,7 @@ public partial class MainWindow : Form
         }
         catch (Exception ex)
         {
-            this.data.AddLogMessage("Could not manually delete \"" + e.Directory + "\" because of the following error: " + ex.Message);
+            data.AddLogMessage("Could not manually delete \"" + e.Directory + "\" because of the following error: " + ex.Message);
 
             MessageBox.Show(this, "The directory was not deleted, because of the following error:" + Environment.NewLine + ex.Message);
         }
@@ -799,36 +775,28 @@ public partial class MainWindow : Form
     {
         if (e.Protected)
         {
-            this.core.AddProtectedFolder(e.Path);
+            core.AddProtectedFolder(e.Path);
         }
         else
         {
-            this.core.RemoveProtected(e.Path);
+            core.RemoveProtected(e.Path);
         }
     }
 
-    /// <summary>
-    ///     User clicks twice on a folder
-    /// </summary>
+    /// <summary>User clicks twice on a folder</summary>
     private void tvFolders_DoubleClick(object sender, EventArgs e)
     {
-        SystemFunctions.OpenDirectoryWithExplorer(this.tree.GetSelectedFolderPath());
+        SystemFunctions.OpenDirectoryWithExplorer(tree.GetSelectedFolderPath());
     }
 
     private void unprotectFolderToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        this.tree.UnprotectSelected();
+        tree.UnprotectSelected();
     }
 
-    /// <summary>
-    ///     Enables/disables all items in the context menu
-    /// </summary>
-    /// <param
-    ///     name="contextMenuStrip">
-    /// </param>
-    /// <param
-    ///     name="enable">
-    /// </param>
+    /// <summary>Enables/disables all items in the context menu</summary>
+    /// <param name = "contextMenuStrip"></param>
+    /// <param name = "enable"></param>
     private void UpdateContextMenu(ContextMenuStrip contextMenuStrip, bool enable)
     {
         foreach (ToolStripItem item in contextMenuStrip.Items)
@@ -839,18 +807,18 @@ public partial class MainWindow : Form
 
     private void UpdateRuntimeDataObject()
     {
-        this.data.IgnoreAllErrors            = Settings.Default.ignore_deletion_errors;
-        this.data.IgnoreFiles                = Settings.Default.ignore_files;
-        this.data.IgnoreDirectoriesList      = Settings.Default.ignore_directories;
-        this.data.IgnoreEmptyFiles           = Settings.Default.ignore_0kb_files;
-        this.data.IgnoreHiddenFolders        = Settings.Default.dont_scan_hidden_folders;
-        this.data.KeepSystemFolders          = Settings.Default.keep_system_folders;
-        this.data.HideScanErrors             = Settings.Default.hide_scan_errors;
-        this.data.MinFolderAgeHours          = Settings.Default.min_folder_age_hours;
-        this.data.MaxDepth                   = (int)Settings.Default.max_depth;
-        this.data.InfiniteLoopDetectionCount = (int)Settings.Default.infinite_loop_detection_count;
-        this.data.DeleteMode                 = (DeleteModes)Settings.Default.delete_mode;
-        this.data.PauseTime                  = (int)Settings.Default.pause_between;
+        data.IgnoreAllErrors            = Settings.Default.ignore_deletion_errors;
+        data.IgnoreFiles                = Settings.Default.ignore_files;
+        data.IgnoreDirectoriesList      = Settings.Default.ignore_directories;
+        data.IgnoreEmptyFiles           = Settings.Default.ignore_0kb_files;
+        data.IgnoreHiddenFolders        = Settings.Default.dont_scan_hidden_folders;
+        data.KeepSystemFolders          = Settings.Default.keep_system_folders;
+        data.HideScanErrors             = Settings.Default.hide_scan_errors;
+        data.MinFolderAgeHours          = Settings.Default.min_folder_age_hours;
+        data.MaxDepth                   = (int)Settings.Default.max_depth;
+        data.InfiniteLoopDetectionCount = (int)Settings.Default.infinite_loop_detection_count;
+        data.DeleteMode                 = (DeleteModes)Settings.Default.delete_mode;
+        data.PauseTime                  = (int)Settings.Default.pause_between;
     }
 
     private RedCore core;

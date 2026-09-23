@@ -5,8 +5,8 @@ public class ProtectionStatusChangedEventArgs : EventArgs
 
     public ProtectionStatusChangedEventArgs(string path, bool @protected)
     {
-        this.Path      = path;
-        this.Protected = @protected;
+        Path      = path;
+        Protected = @protected;
     }
 
     public string Path{get; set;}

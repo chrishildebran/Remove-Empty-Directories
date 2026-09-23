@@ -1,17 +1,15 @@
 ﻿namespace RED2.Lib;
 
-/// <summary>
-///     Deletes the empty directories RED found
-/// </summary>
+/// <summary>Deletes the empty directories RED found</summary>
 public class DeletionWorker : BackgroundWorker
 {
 
     public DeletionWorker()
     {
-        this.WorkerReportsProgress      = true;
-        this.WorkerSupportsCancellation = true;
+        WorkerReportsProgress      = true;
+        WorkerSupportsCancellation = true;
 
-        this.ListPos = 0;
+        ListPos = 0;
     }
 
     public RuntimeData Data{get; set;}
@@ -32,7 +30,7 @@ public class DeletionWorker : BackgroundWorker
         // Be sure not to manipulate any Windows Forms controls created
         // on the UI thread from this method.
 
-        if (this.CancellationPending)
+        if (CancellationPending)
         {
             e.Cancel = true;
 
@@ -41,59 +39,59 @@ public class DeletionWorker : BackgroundWorker
 
         var stopNow      = false;
         var errorMessage = "";
-        this.ErrorInfo = null;
+        ErrorInfo = null;
 
-        var count = this.Data.EmptyFolderList.Count;
+        var count = Data.EmptyFolderList.Count;
 
-        while (this.ListPos < this.Data.EmptyFolderList.Count)
+        while (ListPos < Data.EmptyFolderList.Count)
         {
-            if (this.CancellationPending)
+            if (CancellationPending)
             {
                 e.Cancel = true;
 
                 return;
             }
 
-            var folder = this.Data.EmptyFolderList[this.ListPos];
+            var folder = Data.EmptyFolderList[ListPos];
             var status = DirectoryDeletionStatusTypes.Ignored;
 
 
             // Do not delete one time protected folders
-            if (!this.Data.ProtectedFolderList.ContainsKey(folder))
+            if (!Data.ProtectedFolderList.ContainsKey(folder))
             {
                 try
                 {
                     // Try to delete the directory
-                    this.SecureDelete(folder);
+                    SecureDelete(folder);
 
-                    this.Data.AddLogMessage($"Successfully deleted dir \"{folder}\"");
+                    Data.AddLogMessage($"Successfully deleted dir \"{folder}\"");
 
                     status = DirectoryDeletionStatusTypes.Deleted;
-                    this.DeletedCount++;
+                    DeletedCount++;
                 }
                 catch (RedPermissionDeniedException ex)
                 {
                     errorMessage = ex.Message;
 
-                    this.Data.AddLogMessage($"Directory is protected by the system \"{folder}\" - Message: \"{errorMessage}\"");
+                    Data.AddLogMessage($"Directory is protected by the system \"{folder}\" - Message: \"{errorMessage}\"");
 
                     status = DirectoryDeletionStatusTypes.Protected;
-                    this.ProtectedCount++;
+                    ProtectedCount++;
                 }
                 catch (Exception ex)
                 {
                     errorMessage = ex.Message;
-                    stopNow      = !this.Data.IgnoreAllErrors;
+                    stopNow      = !Data.IgnoreAllErrors;
 
-                    this.Data.AddLogMessage($"Failed to delete dir \"{folder}\" - Error message: \"{errorMessage}\"");
+                    Data.AddLogMessage($"Failed to delete dir \"{folder}\" - Error message: \"{errorMessage}\"");
 
                     status = DirectoryDeletionStatusTypes.Warning;
-                    this.FailedCount++;
+                    FailedCount++;
                 }
 
-                if (!stopNow && this.Data.PauseTime > 0)
+                if (!stopNow && Data.PauseTime > 0)
                 {
-                    Thread.Sleep(TimeSpan.FromMilliseconds(this.Data.PauseTime));
+                    Thread.Sleep(TimeSpan.FromMilliseconds(Data.PauseTime));
                 }
             }
             else
@@ -101,9 +99,9 @@ public class DeletionWorker : BackgroundWorker
                 status = DirectoryDeletionStatusTypes.Protected;
             }
 
-            this.ReportProgress(1, new DeleteProcessUpdateEventArgs(this.ListPos, folder, status, count));
+            ReportProgress(1, new DeleteProcessUpdateEventArgs(ListPos, folder, status, count));
 
-            this.ListPos++;
+            ListPos++;
 
             if (stopNow)
             {
@@ -113,8 +111,8 @@ public class DeletionWorker : BackgroundWorker
                     errorMessage = "Unknown error";
                 }
 
-                e.Cancel       = true;
-                this.ErrorInfo = new DeletionErrorEventArgs(folder, errorMessage);
+                e.Cancel  = true;
+                ErrorInfo = new DeletionErrorEventArgs(folder, errorMessage);
 
                 return;
             }
@@ -135,7 +133,7 @@ public class DeletionWorker : BackgroundWorker
 
         // Cleanup folder
 
-        var ignoreFileList = this.Data.GetIgnoreFileList();
+        var ignoreFileList = Data.GetIgnoreFileList();
 
         var files = emptyDirectory.GetFiles();
 
@@ -147,7 +145,7 @@ public class DeletionWorker : BackgroundWorker
             {
                 var file = files[f];
 
-                var deleteTrashFile = SystemFunctions.MatchesIgnorePattern(file, (int)file.Length, this.Data.IgnoreEmptyFiles, ignoreFileList, out var delPattern);
+                var deleteTrashFile = SystemFunctions.MatchesIgnorePattern(file, (int)file.Length, Data.IgnoreEmptyFiles, ignoreFileList, out var delPattern);
 
 
                 // If only one file is good, then stop.
@@ -155,13 +153,13 @@ public class DeletionWorker : BackgroundWorker
                 {
                     try
                     {
-                        SystemFunctions.SecureDeleteFile(file, this.Data.DeleteMode);
+                        SystemFunctions.SecureDeleteFile(file, Data.DeleteMode);
 
-                        this.Data.AddLogMessage($"-> Successfully deleted file \"{file.FullName}\" because it matched the ignore pattern \"{delPattern}\"");
+                        Data.AddLogMessage($"-> Successfully deleted file \"{file.FullName}\" because it matched the ignore pattern \"{delPattern}\"");
                     }
                     catch (Exception ex)
                     {
-                        this.Data.AddLogMessage($"Failed to delete file \"{file.FullName}\" - Error message: \"{ex.Message}\"");
+                        Data.AddLogMessage($"Failed to delete file \"{file.FullName}\" - Error message: \"{ex.Message}\"");
 
                         var msg = "Could not delete this empty (trash) file:" + Environment.NewLine + file.FullName + Environment.NewLine + Environment.NewLine + "Error message: " + ex.Message;
 
@@ -180,7 +178,7 @@ public class DeletionWorker : BackgroundWorker
         // End cleanup
 
         // This function will ensure that the directory is really empty before it gets deleted
-        SystemFunctions.SecureDeleteDirectory(emptyDirectory.FullName, this.Data.DeleteMode);
+        SystemFunctions.SecureDeleteDirectory(emptyDirectory.FullName, Data.DeleteMode);
     }
 
 }

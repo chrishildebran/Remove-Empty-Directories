@@ -2,16 +2,14 @@ namespace RED2.Lib;
 
 using Properties;
 
-/// <summary>
-///     Searches for empty directories
-/// </summary>
+/// <summary>Searches for empty directories</summary>
 public class FindEmptyDirectoryWorker : BackgroundWorker
 {
 
     public FindEmptyDirectoryWorker()
     {
-        this.WorkerReportsProgress      = true;
-        this.WorkerSupportsCancellation = true;
+        WorkerReportsProgress      = true;
+        WorkerSupportsCancellation = true;
     }
 
     public RuntimeData Data{get; set;}
@@ -26,24 +24,24 @@ public class FindEmptyDirectoryWorker : BackgroundWorker
     {
         var startFolder = (DirectoryInfo)e.Argument;
 
-        this.PossibleEndlessLoop = 0;
+        PossibleEndlessLoop = 0;
 
 
         // Clean dir list
-        this.Data.EmptyFolderList = new List<string>();
+        Data.EmptyFolderList = new List<string>();
 
-        this.ignoreFileList   = this.Data.GetIgnoreFileList();
-        this.ignoreFolderList = this.Data.GetIgnoreDirectories();
+        ignoreFileList   = Data.GetIgnoreFileList();
+        ignoreFolderList = Data.GetIgnoreDirectories();
 
         try
         {
-            var rootStatusType = this.CheckIfDirectoryEmpty(startFolder, 1);
+            var rootStatusType = CheckIfDirectoryEmpty(startFolder, 1);
 
-            this.ReportProgress(0, new FoundEmptyDirInfoEventArgs(startFolder.FullName, rootStatusType));
+            ReportProgress(0, new FoundEmptyDirInfoEventArgs(startFolder.FullName, rootStatusType));
 
-            if (this.PossibleEndlessLoop > this.Data.InfiniteLoopDetectionCount)
+            if (PossibleEndlessLoop > Data.InfiniteLoopDetectionCount)
             {
-                this.Data.AddLogMessage("Detected possible infinite-loop somewhere in the target path \"" + startFolder + "\" (symbolic links can cause this)");
+                Data.AddLogMessage("Detected possible infinite-loop somewhere in the target path \"" + startFolder + "\" (symbolic links can cause this)");
 
                 throw new Exception("Possible infinite-loop detected (symbolic links can cause this)");
             }
@@ -51,15 +49,15 @@ public class FindEmptyDirectoryWorker : BackgroundWorker
         catch (Exception ex)
         {
             e.Cancel = true;
-            this.Data.AddLogMessage("An error occurred during the scan process: " + ex.Message);
-            this.ErrorInfo = new DeletionErrorEventArgs(startFolder.FullName, ex.Message);
+            Data.AddLogMessage("An error occurred during the scan process: " + ex.Message);
+            ErrorInfo = new DeletionErrorEventArgs(startFolder.FullName, ex.Message);
 
             return;
         }
 
-        if (this.CancellationPending)
+        if (CancellationPending)
         {
-            this.Data.AddLogMessage("Scan process was cancelled");
+            Data.AddLogMessage("Scan process was cancelled");
             e.Cancel = true;
             e.Result = 0;
 
@@ -71,9 +69,9 @@ public class FindEmptyDirectoryWorker : BackgroundWorker
 
     private DirectorySearchStatusTypes CheckIfDirectoryEmpty(DirectoryInfo startDir, int depth)
     {
-        if (this.PossibleEndlessLoop > this.Data.InfiniteLoopDetectionCount)
+        if (PossibleEndlessLoop > Data.InfiniteLoopDetectionCount)
         {
-            this.ReportProgress(0, new FoundEmptyDirInfoEventArgs(startDir.FullName, DirectorySearchStatusTypes.Error, "Aborted - possible infinite-loop detected"));
+            ReportProgress(0, new FoundEmptyDirInfoEventArgs(startDir.FullName, DirectorySearchStatusTypes.Error, "Aborted - possible infinite-loop detected"));
 
             return DirectorySearchStatusTypes.Error;
         }
@@ -82,25 +80,25 @@ public class FindEmptyDirectoryWorker : BackgroundWorker
         {
             // Thread.Sleep(500); -> ?
 
-            if (this.Data.MaxDepth != -1 && depth > this.Data.MaxDepth)
+            if (Data.MaxDepth != -1 && depth > Data.MaxDepth)
             {
                 return DirectorySearchStatusTypes.NotEmpty;
             }
 
 
             // Cancel process if the user hits stop
-            if (this.CancellationPending)
+            if (CancellationPending)
             {
                 return DirectorySearchStatusTypes.NotEmpty;
             }
 
-            this.FolderCount++;
+            FolderCount++;
 
 
             // update status progress bar after 100 steps:
-            if (this.FolderCount % 100 == 0)
+            if (FolderCount % 100 == 0)
             {
-                this.ReportProgress(this.FolderCount, "Checking directory: " + startDir.Name);
+                ReportProgress(FolderCount, "Checking directory: " + startDir.Name);
             }
 
             var containsFiles = false;
@@ -124,9 +122,9 @@ public class FindEmptyDirectoryWorker : BackgroundWorker
             {
                 // CF = true = folder does not get deleted:
                 containsFiles = true; // secure way
-                this.Data.AddLogMessage("Failed to access files in \"" + startDir.FullName + "\"");
+                Data.AddLogMessage("Failed to access files in \"" + startDir.FullName + "\"");
 
-                this.ReportProgress(0, new FoundEmptyDirInfoEventArgs(startDir.FullName, DirectorySearchStatusTypes.Error, "Failed to access files"));
+                ReportProgress(0, new FoundEmptyDirInfoEventArgs(startDir.FullName, DirectorySearchStatusTypes.Error, "Failed to access files"));
             }
             else if (fileList.Length == 0)
             {
@@ -159,7 +157,7 @@ public class FindEmptyDirectoryWorker : BackgroundWorker
 
 
                     // If only one file is good, then stop.
-                    if (!SystemFunctions.MatchesIgnorePattern(file, filesize, this.Data.IgnoreEmptyFiles, this.ignoreFileList, out delPattern))
+                    if (!SystemFunctions.MatchesIgnorePattern(file, filesize, Data.IgnoreEmptyFiles, ignoreFileList, out delPattern))
                     {
                         containsFiles = true;
                     }
@@ -177,9 +175,9 @@ public class FindEmptyDirectoryWorker : BackgroundWorker
             catch
             {
                 // If we can not read the folder -> don't delete it:
-                this.Data.AddLogMessage("Failed to access subdirectories in \"" + startDir.FullName + "\"");
+                Data.AddLogMessage("Failed to access subdirectories in \"" + startDir.FullName + "\"");
 
-                this.ReportProgress(0, new FoundEmptyDirInfoEventArgs(startDir.FullName, DirectorySearchStatusTypes.Error, "Failed to access subdirectories"));
+                ReportProgress(0, new FoundEmptyDirInfoEventArgs(startDir.FullName, DirectorySearchStatusTypes.Error, "Failed to access subdirectories"));
 
                 return DirectorySearchStatusTypes.Error;
             }
@@ -197,24 +195,24 @@ public class FindEmptyDirectoryWorker : BackgroundWorker
             {
                 var attribs = curDir.Attributes;
 
-                var ignoreSystemDir = this.Data.KeepSystemFolders   && (attribs & FileAttributes.System) == FileAttributes.System;
-                var ignoreHiddenDir = this.Data.IgnoreHiddenFolders && (attribs & FileAttributes.Hidden) == FileAttributes.Hidden;
+                var ignoreSystemDir = Data.KeepSystemFolders   && (attribs & FileAttributes.System) == FileAttributes.System;
+                var ignoreHiddenDir = Data.IgnoreHiddenFolders && (attribs & FileAttributes.Hidden) == FileAttributes.Hidden;
 
                 var ignoreSubDirectory = ignoreSystemDir || ignoreHiddenDir;
 
-                if (!ignoreSubDirectory && this.checkIfDirectoryIsOnIgnoreList(curDir))
+                if (!ignoreSubDirectory && checkIfDirectoryIsOnIgnoreList(curDir))
                 {
-                    this.Data.AddLogMessage("Aborted scan of \"" + curDir.FullName + "\" because it is on the ignore list.");
+                    Data.AddLogMessage("Aborted scan of \"" + curDir.FullName + "\" because it is on the ignore list.");
 
-                    this.ReportProgress(0, new FoundEmptyDirInfoEventArgs(curDir.FullName, DirectorySearchStatusTypes.Ignore));
+                    ReportProgress(0, new FoundEmptyDirInfoEventArgs(curDir.FullName, DirectorySearchStatusTypes.Ignore));
                     ignoreSubDirectory = true;
                 }
 
                 if (!ignoreSubDirectory && (attribs & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint)
                 {
-                    this.Data.AddLogMessage("Aborted scan of \"" + curDir.FullName + "\" because it is a symbolic link");
+                    Data.AddLogMessage("Aborted scan of \"" + curDir.FullName + "\" because it is a symbolic link");
 
-                    this.ReportProgress(0, new FoundEmptyDirInfoEventArgs(curDir.FullName, DirectorySearchStatusTypes.Error, "Aborted because dir is a symbolic link"));
+                    ReportProgress(0, new FoundEmptyDirInfoEventArgs(curDir.FullName, DirectorySearchStatusTypes.Error, "Aborted because dir is a symbolic link"));
                     ignoreSubDirectory = true;
                 }
 
@@ -234,20 +232,20 @@ public class FindEmptyDirectoryWorker : BackgroundWorker
                 if (!ignoreSubDirectory)
                 {
                     // JRS ADDED check for AGE of folder
-                    if (curDir.CreationTime.AddHours(this.Data.MinFolderAgeHours) < DateTime.Now)
+                    if (curDir.CreationTime.AddHours(Data.MinFolderAgeHours) < DateTime.Now)
                     {
-                        subFolderStatus = this.CheckIfDirectoryEmpty(curDir, depth + 1);
+                        subFolderStatus = CheckIfDirectoryEmpty(curDir, depth + 1);
                     }
                     else
                     {
-                        this.Data.AddLogMessage(string.Format(Resources.young_folder_skipped, curDir.FullName, this.Data.MinFolderAgeHours.ToString(), curDir.CreationTime.ToString()));
+                        Data.AddLogMessage(string.Format(Resources.young_folder_skipped, curDir.FullName, Data.MinFolderAgeHours.ToString(), curDir.CreationTime.ToString()));
                     }
 
 
                     // Report status to the GUI
                     if (subFolderStatus == DirectorySearchStatusTypes.Empty)
                     {
-                        this.ReportProgress(0, new FoundEmptyDirInfoEventArgs(curDir.FullName, subFolderStatus));
+                        ReportProgress(0, new FoundEmptyDirInfoEventArgs(curDir.FullName, subFolderStatus));
                     }
                 }
 
@@ -269,12 +267,12 @@ public class FindEmptyDirectoryWorker : BackgroundWorker
 
             if (ex is PathTooLongException)
             {
-                this.PossibleEndlessLoop++;
+                PossibleEndlessLoop++;
             }
 
-            this.Data.AddLogMessage("An unknown error occurred while trying to scan this directory: \"" + startDir.FullName + "\" - Error message: " + ex.Message);
+            Data.AddLogMessage("An unknown error occurred while trying to scan this directory: \"" + startDir.FullName + "\" - Error message: " + ex.Message);
 
-            this.ReportProgress(0, new FoundEmptyDirInfoEventArgs(startDir.FullName, DirectorySearchStatusTypes.Error, ex.Message));
+            ReportProgress(0, new FoundEmptyDirInfoEventArgs(startDir.FullName, DirectorySearchStatusTypes.Error, ex.Message));
 
             return DirectorySearchStatusTypes.Error;
         }
@@ -284,9 +282,9 @@ public class FindEmptyDirectoryWorker : BackgroundWorker
     {
         var ignoreFolder = false;
 
-        if (this.ignoreFolderList.Length > 0)
+        if (ignoreFolderList.Length > 0)
         {
-            foreach (var currentPath in this.ignoreFolderList)
+            foreach (var currentPath in ignoreFolderList)
             {
                 if (currentPath == "")
                 {

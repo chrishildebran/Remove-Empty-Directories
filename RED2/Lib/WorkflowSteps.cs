@@ -1,8 +1,6 @@
 ﻿namespace RED2.Lib;
 
-/// <summary>
-///     RED workflow steps
-/// </summary>
+/// <summary>RED workflow steps</summary>
 public enum WorkflowSteps
 {
 

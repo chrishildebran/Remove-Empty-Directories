@@ -5,8 +5,8 @@ public class FinishedScanForEmptyDirsEventArgs : EventArgs
 
     public FinishedScanForEmptyDirsEventArgs(int emptyFolderCount, int folderCount)
     {
-        this.EmptyFolderCount = emptyFolderCount;
-        this.FolderCount      = folderCount;
+        EmptyFolderCount = emptyFolderCount;
+        FolderCount      = folderCount;
     }
 
     public int EmptyFolderCount{get; set;}

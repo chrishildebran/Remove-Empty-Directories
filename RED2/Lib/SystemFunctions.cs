@@ -2,10 +2,7 @@
 
 using Properties;
 
-/// <summary>
-///     A collection of (generic) system functions
-///     Exception handling should be made by the caller
-/// </summary>
+/// <summary>A collection of (generic) system functions Exception handling should be made by the caller</summary>
 public class SystemFunctions
 {
 
@@ -42,9 +39,7 @@ public class SystemFunctions
         return str.Replace(@"\r\n", "\r\n").Replace(@"\n", "\n");
     }
 
-    /// <summary>
-    ///     Check for the registry key
-    /// </summary>
+    /// <summary>Check for the registry key</summary>
     /// <returns></returns>
     public static bool IsRegKeyIntegratedIntoWindowsExplorer()
     {
@@ -123,9 +118,7 @@ public class SystemFunctions
         return matchesPattern;
     }
 
-    /// <summary>
-    ///     Opens a folder
-    /// </summary>
+    /// <summary>Opens a folder</summary>
     public static void OpenDirectoryWithExplorer(string path)
     {
         if (path == "")

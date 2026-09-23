@@ -1,15 +1,13 @@
 ﻿namespace RED2.Lib;
 
-/// <summary>
-///     RED core class, handles events and communicates with the GUI
-/// </summary>
+/// <summary>RED core class, handles events and communicates with the GUI</summary>
 public class RedCore
 {
 
     public RedCore(MainWindow mainWindow, RuntimeData data)
     {
-        this.redMainWindow = mainWindow;
-        this.data          = data;
+        redMainWindow = mainWindow;
+        this.data     = data;
     }
 
     public event EventHandler OnAborted;
@@ -34,108 +32,106 @@ public class RedCore
 
     public string GetLogMessages()
     {
-        return this.data.LogMessages.ToString();
+        return data.LogMessages.ToString();
     }
 
-    /// <summary>
-    ///     Start searching empty folders
-    /// </summary>
+    /// <summary>Start searching empty folders</summary>
     public void SearchingForEmptyDirectories()
     {
-        this.CurrentProcessStep = WorkflowSteps.StartSearchingForEmptyDirs;
+        CurrentProcessStep = WorkflowSteps.StartSearchingForEmptyDirs;
 
 
         // Rest folder list
-        this.data.ProtectedFolderList = new Dictionary<string, bool>();
+        data.ProtectedFolderList = new Dictionary<string, bool>();
 
 
         // Start async empty directory search worker
-        this.searchEmptyFoldersWorker      = new FindEmptyDirectoryWorker();
-        this.searchEmptyFoldersWorker.Data = this.data;
+        searchEmptyFoldersWorker      = new FindEmptyDirectoryWorker();
+        searchEmptyFoldersWorker.Data = data;
 
-        this.searchEmptyFoldersWorker.ProgressChanged += this.searchEmptyFoldersWorker_ProgressChanged;
+        searchEmptyFoldersWorker.ProgressChanged += searchEmptyFoldersWorker_ProgressChanged;
 
-        this.searchEmptyFoldersWorker.RunWorkerCompleted += this.searchEmptyFoldersWorker_RunWorkerCompleted;
+        searchEmptyFoldersWorker.RunWorkerCompleted += searchEmptyFoldersWorker_RunWorkerCompleted;
 
-        this.searchEmptyFoldersWorker.RunWorkerAsync(this.data.StartFolder);
+        searchEmptyFoldersWorker.RunWorkerAsync(data.StartFolder);
     }
 
     public void StartDeleteProcess()
     {
-        this.CurrentProcessStep = WorkflowSteps.DeleteProcessRunning;
+        CurrentProcessStep = WorkflowSteps.DeleteProcessRunning;
 
 
         // Kick-off deletion worker to async delete directories
-        this.deletionWorker      = new DeletionWorker();
-        this.deletionWorker.Data = this.data;
+        deletionWorker      = new DeletionWorker();
+        deletionWorker.Data = data;
 
-        this.deletionWorker.ProgressChanged += this.deletionWorker_ProgressChanged;
+        deletionWorker.ProgressChanged += deletionWorker_ProgressChanged;
 
-        this.deletionWorker.RunWorkerCompleted += this.deletionWorker_RunWorkerCompleted;
+        deletionWorker.RunWorkerCompleted += deletionWorker_RunWorkerCompleted;
 
-        this.deletionWorker.RunWorkerAsync();
+        deletionWorker.RunWorkerAsync();
     }
 
     internal void AbortDeletion()
     {
-        this.CurrentProcessStep = WorkflowSteps.Idle;
+        CurrentProcessStep = WorkflowSteps.Idle;
 
-        this.deletionWorker.Dispose();
-        this.deletionWorker = null;
+        deletionWorker.Dispose();
+        deletionWorker = null;
 
-        if (this.OnAborted != null)
+        if (OnAborted != null)
         {
-            this.OnAborted(this, new EventArgs());
+            OnAborted(this, new EventArgs());
         }
     }
 
     internal void AddProtectedFolder(string path)
     {
-        if (!this.data.ProtectedFolderList.ContainsKey(path))
+        if (!data.ProtectedFolderList.ContainsKey(path))
         {
-            this.data.ProtectedFolderList.Add(path, true);
+            data.ProtectedFolderList.Add(path, true);
         }
     }
 
     internal void CancelCurrentProcess()
     {
-        if (this.CurrentProcessStep == WorkflowSteps.StartSearchingForEmptyDirs)
+        if (CurrentProcessStep == WorkflowSteps.StartSearchingForEmptyDirs)
         {
-            if (this.searchEmptyFoldersWorker == null)
+            if (searchEmptyFoldersWorker == null)
             {
                 return;
             }
 
-            if (this.searchEmptyFoldersWorker.IsBusy || this.searchEmptyFoldersWorker.CancellationPending == false)
+            if (searchEmptyFoldersWorker.IsBusy || !searchEmptyFoldersWorker.CancellationPending)
             {
-                this.searchEmptyFoldersWorker.CancelAsync();
+                searchEmptyFoldersWorker.CancelAsync();
             }
         }
-        else if (this.CurrentProcessStep == WorkflowSteps.DeleteProcessRunning)
+        else if (CurrentProcessStep == WorkflowSteps.DeleteProcessRunning)
         {
-            if (this.deletionWorker == null)
+            if (deletionWorker == null)
             {
                 return;
             }
 
-            if (this.deletionWorker.IsBusy || this.deletionWorker.CancellationPending == false)
+            if (deletionWorker.IsBusy || !deletionWorker.CancellationPending)
             {
-                this.deletionWorker.CancelAsync();
+                deletionWorker.CancelAsync();
             }
         }
     }
 
     internal void ContinueDeleteProcess()
     {
-        this.CurrentProcessStep = WorkflowSteps.DeleteProcessRunning;
-        this.deletionWorker.RunWorkerAsync();
+        CurrentProcessStep = WorkflowSteps.DeleteProcessRunning;
+        deletionWorker.RunWorkerAsync();
     }
 
     internal void RemoveProtected(string folderFullName)
     {
-        if (this.data.ProtectedFolderList.ContainsKey(folderFullName))
+        if (data.ProtectedFolderList.ContainsKey(folderFullName))
         {
-            this.data.ProtectedFolderList.Remove(folderFullName);
+            data.ProtectedFolderList.Remove(folderFullName);
         }
     }
 
@@ -143,34 +139,34 @@ public class RedCore
     {
         var state = e.UserState as DeleteProcessUpdateEventArgs;
 
-        if (this.OnDeleteProcessChanged != null)
+        if (OnDeleteProcessChanged != null)
         {
-            this.OnDeleteProcessChanged(this, state);
+            OnDeleteProcessChanged(this, state);
         }
     }
 
     private void deletionWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
     {
-        this.CurrentProcessStep = WorkflowSteps.Idle;
+        CurrentProcessStep = WorkflowSteps.Idle;
 
         if (e.Error != null)
         {
-            this.ShowErrorMsg(e.Error.Message);
+            ShowErrorMsg(e.Error.Message);
 
-            this.deletionWorker.Dispose();
-            this.deletionWorker = null;
+            deletionWorker.Dispose();
+            deletionWorker = null;
         }
         else if (e.Cancelled)
         {
-            if (this.deletionWorker.ErrorInfo != null)
+            if (deletionWorker.ErrorInfo != null)
             {
                 // A error occurred, process was stopped
                 //
                 // -> Ask user to continue
 
-                if (this.OnDeleteError != null)
+                if (OnDeleteError != null)
                 {
-                    this.OnDeleteError(this, this.deletionWorker.ErrorInfo);
+                    OnDeleteError(this, deletionWorker.ErrorInfo);
                 }
                 else
                 {
@@ -180,32 +176,30 @@ public class RedCore
             else
             {
                 // The user cancelled the process
-                if (this.OnCancelled != null)
+                if (OnCancelled != null)
                 {
-                    this.OnCancelled(this, new EventArgs());
+                    OnCancelled(this, new EventArgs());
                 }
             }
         }
         else
         {
             // TODO: Use separate class here?
-            var deletedCount   = this.deletionWorker.DeletedCount;
-            var failedCount    = this.deletionWorker.FailedCount;
-            var protectedCount = this.deletionWorker.ProtectedCount;
+            var deletedCount   = deletionWorker.DeletedCount;
+            var failedCount    = deletionWorker.FailedCount;
+            var protectedCount = deletionWorker.ProtectedCount;
 
-            this.deletionWorker.Dispose();
-            this.deletionWorker = null;
+            deletionWorker.Dispose();
+            deletionWorker = null;
 
-            if (this.OnDeleteProcessFinished != null)
+            if (OnDeleteProcessFinished != null)
             {
-                this.OnDeleteProcessFinished(this, new DeleteProcessFinishedEventArgs(deletedCount, failedCount, protectedCount));
+                OnDeleteProcessFinished(this, new DeleteProcessFinishedEventArgs(deletedCount, failedCount, protectedCount));
             }
         }
     }
 
-    /// <summary>
-    ///     This function gets called on a status update of the find worker
-    /// </summary>
+    /// <summary>This function gets called on a status update of the find worker</summary>
     private void searchEmptyFoldersWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
     {
         if (e.UserState is FoundEmptyDirInfoEventArgs)
@@ -217,23 +211,23 @@ public class RedCore
 
                 // Found an empty dir, add it to the list
             {
-                this.data.EmptyFolderList.Add(info.Directory);
+                data.EmptyFolderList.Add(info.Directory);
             }
-            else if (info.Type == DirectorySearchStatusTypes.Error && this.data.HideScanErrors)
+            else if (info.Type == DirectorySearchStatusTypes.Error && data.HideScanErrors)
             {
                 return;
             }
 
-            if (this.OnFoundEmptyDirectory != null)
+            if (OnFoundEmptyDirectory != null)
             {
-                this.OnFoundEmptyDirectory(this, info);
+                OnFoundEmptyDirectory(this, info);
             }
         }
         else if (e.UserState is string)
         {
-            if (this.OnProgressChanged != null)
+            if (OnProgressChanged != null)
             {
-                this.OnProgressChanged(this, new ProgressChangedEventArgs(0, (string)e.UserState));
+                OnProgressChanged(this, new ProgressChangedEventArgs(0, (string)e.UserState));
             }
         }
 
@@ -243,60 +237,60 @@ public class RedCore
 
     private void searchEmptyFoldersWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
     {
-        this.CurrentProcessStep = WorkflowSteps.Idle;
+        CurrentProcessStep = WorkflowSteps.Idle;
 
         if (e.Error != null)
         {
-            this.searchEmptyFoldersWorker.Dispose();
-            this.searchEmptyFoldersWorker = null;
+            searchEmptyFoldersWorker.Dispose();
+            searchEmptyFoldersWorker = null;
 
-            this.ShowErrorMsg(e.Error.Message);
+            ShowErrorMsg(e.Error.Message);
         }
         else if (e.Cancelled)
         {
-            if (this.searchEmptyFoldersWorker.ErrorInfo != null)
+            if (searchEmptyFoldersWorker.ErrorInfo != null)
             {
                 // A error occurred, process was stopped
-                this.ShowErrorMsg(this.searchEmptyFoldersWorker.ErrorInfo.ErrorMessage);
+                ShowErrorMsg(searchEmptyFoldersWorker.ErrorInfo.ErrorMessage);
 
-                this.searchEmptyFoldersWorker.Dispose();
-                this.searchEmptyFoldersWorker = null;
+                searchEmptyFoldersWorker.Dispose();
+                searchEmptyFoldersWorker = null;
 
-                if (this.OnAborted != null)
+                if (OnAborted != null)
                 {
-                    this.OnAborted(this, new EventArgs());
+                    OnAborted(this, new EventArgs());
                 }
             }
             else
             {
-                this.searchEmptyFoldersWorker.Dispose();
-                this.searchEmptyFoldersWorker = null;
+                searchEmptyFoldersWorker.Dispose();
+                searchEmptyFoldersWorker = null;
 
-                if (this.OnCancelled != null)
+                if (OnCancelled != null)
                 {
-                    this.OnCancelled(this, new EventArgs());
+                    OnCancelled(this, new EventArgs());
                 }
             }
         }
         else
         {
-            var folderCount = this.searchEmptyFoldersWorker.FolderCount;
+            var folderCount = searchEmptyFoldersWorker.FolderCount;
 
-            this.searchEmptyFoldersWorker.Dispose();
-            this.searchEmptyFoldersWorker = null;
+            searchEmptyFoldersWorker.Dispose();
+            searchEmptyFoldersWorker = null;
 
-            if (this.OnFinishedScanForEmptyDirs != null)
+            if (OnFinishedScanForEmptyDirs != null)
             {
-                this.OnFinishedScanForEmptyDirs(this, new FinishedScanForEmptyDirsEventArgs(this.data.EmptyFolderList.Count, folderCount));
+                OnFinishedScanForEmptyDirs(this, new FinishedScanForEmptyDirsEventArgs(data.EmptyFolderList.Count, folderCount));
             }
         }
     }
 
     private void ShowErrorMsg(string errorMessage)
     {
-        if (this.OnError != null)
+        if (OnError != null)
         {
-            this.OnError(this, new ErrorEventArgs(errorMessage));
+            OnError(this, new ErrorEventArgs(errorMessage));
         }
     }
 

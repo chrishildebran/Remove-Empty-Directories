@@ -1,8 +1,6 @@
 ﻿namespace RED2.Lib;
 
-/// <summary>
-///     Icon names (Warning: Entries are case sensitive)
-/// </summary>
+/// <summary>Icon names (Warning: Entries are case sensitive)</summary>
 public enum DirectoryIcons
 {
 

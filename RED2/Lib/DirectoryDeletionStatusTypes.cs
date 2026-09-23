@@ -1,8 +1,6 @@
 ﻿namespace RED2.Lib;
 
-/// <summary>
-///     Result types of the deletion process
-/// </summary>
+/// <summary>Result types of the deletion process</summary>
 public enum DirectoryDeletionStatusTypes
 {
 
